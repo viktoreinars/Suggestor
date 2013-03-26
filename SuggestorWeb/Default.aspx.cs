@@ -49,5 +49,10 @@ namespace SuggestorWeb
             NAVSuggestor.GetInstance().RemoveBasketItem(itemId, 1); // TODO: Quantity
             basketGrid.DataBind();
         }
+
+        protected String SimpleFunctionToValidateGit()
+        {
+            return "Git from VS is working...Awesomeest";
+        }
     }
 }
