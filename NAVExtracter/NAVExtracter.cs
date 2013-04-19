@@ -7,15 +7,15 @@ using System.Collections;
 using System.IO;
 using Suggestor;
 
-namespace NAVExtracter
+namespace NAVSuggestor
 {
     public class NAVExtracter
     {
         private NETConductor.Basics nc = new NETConductor.Basics();
 
-        public Dictionary<string, SuggestorItem> GetItems(string dateFilter)
+        public Dictionary<string, Item> GetItems(string dateFilter)
         {
-            Dictionary<string, SuggestorItem> items = new Dictionary<string, SuggestorItem>();
+            Dictionary<string, Item> items = new Dictionary<string, Item>();
             /*
             XmlNode generalLedgerEntries = nc.SelectFromTable("NCDEV.DT", 17, "*", "4=\"" + dateFilter + "\",5=\"2\",28=\"SALES\"", "");
             XmlNodeList generalLedgerLines = generalLedgerEntries.SelectNodes("Reply/G_L_Entry");
@@ -42,16 +42,16 @@ namespace NAVExtracter
                         quantity = Int32.Parse(quantityNode.InnerText);
                     if (!items.ContainsKey(no))
                         items.Add(no, new Item(no, description, quantity));
-                    ((Item)items[no]).SetQuantity(items[no].GetQuantity() + quantity);
+                    ((Item)items[no]).Quantity = items[no].Quantity + quantity;
                 }
             //}
 
             return items;
         }
 
-        public Tuple<Dictionary<string, User>, Dictionary<string, SuggestorInvoice>> GetInvoices(string dateFilter)
+        public Tuple<Dictionary<string, User>, Dictionary<string, Invoice>> GetInvoices(string dateFilter)
         {
-            Dictionary<string, SuggestorInvoice> invoices = new Dictionary<string, SuggestorInvoice>();
+            Dictionary<string, Invoice> invoices = new Dictionary<string, Invoice>();
             Dictionary<string, User> customers = new Dictionary<string, User>();
             /*
             XmlNode generalLedgerEntries = nc.SelectFromTable("NCDEV.DT", 17, "*", "4=\"" + dateFilter + "\",5=\"2\",28=\"SALES\"", "");
@@ -80,17 +80,21 @@ namespace NAVExtracter
                         invoices.Add(invoiceNo, new Invoice(invoiceNo, customerId));
 
                     // Add Item to Invoice
-                    if (!(invoices[invoiceNo].GetInvoiceLines().ContainsKey(no)))
-                        invoices[invoiceNo].GetInvoiceLines().Add(no, new InvoiceLine(no, description, quantity));
-                    invoices[invoiceNo].GetInvoiceLines()[no].SetQuantity(invoices[invoiceNo].GetInvoiceLines()[no].GetQuantity() + 1); // Increment quantity                
+                    /*if (!(invoices[invoiceNo].CollectionLines.ContainsKey(no)))
+                        invoices[invoiceNo].CollectionLines.Add(no, new InvoiceLine(no, description, quantity));
+                    invoices[invoiceNo].CollectionLines[no].Quantity = invoices[invoiceNo].CollectionLines[no].Quantity + 1; // Increment quantity*/
+                    
+                    if (!(invoices[invoiceNo].InvoiceLines.ContainsKey(no)))
+                        invoices[invoiceNo].InvoiceLines.Add(no, new InvoiceLine(no, description, quantity));
+                    invoices[invoiceNo].InvoiceLines[no].Quantity = invoices[invoiceNo].CollectionLines[no].Quantity + 1; // Increment quantity
                 }
 
             //}
 
             foreach (string invoiceNo in invoices.Keys)
             {
-                string customerId = invoices[invoiceNo].GetCustomerId();
-                customers[customerId].PurchaseInvoices.Add((Invoice)invoices[invoiceNo]);
+                string customerId = invoices[invoiceNo].UserId;
+                customers[customerId].Collections.Add(invoiceNo, (Invoice)invoices[invoiceNo]);
             }
             
             return Tuple.Create(customers, invoices);

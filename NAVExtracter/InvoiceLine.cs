@@ -2,37 +2,76 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Suggestor;
 
-namespace NAVExtracter
+namespace NAVSuggestor
 {
-    public class InvoiceLine : SuggestorInvoiceLine
+    public class InvoiceLine : SuggestorCollectionLine
     {
         private string itemNo;
         private string description;
         private double quantity;
         private double weight;
 
-        public string GetItemNo()
+        public InvoiceLine() { }
+
+        public InvoiceLine(string itemNo, string description, double quantity)
         {
-            return itemNo; 
+            this.itemNo = itemNo;
+            this.description = description;
+            this.quantity = quantity;
         }
 
-        public string GetDescription()
+        public string ItemNo
         {
-            return description;
+            get
+            {
+                return itemNo;
+            }
+            set
+            {
+                itemNo = value;
+            }
         }
 
-        public double GetQuantity()
+        public string Description
         {
-            return quantity;
+            get
+            {
+                return description;
+            }
+            set
+            {
+                description = value;
+            }
         }
 
-        public double GetWeight()
+        public double Quantity
         {
-            return weight;
+            get
+            {
+                return quantity;
+            }
+            set
+            {
+                quantity = value;
+            }
         }
 
+        // TODO: Ignore this?
+        public double Weight
+        {
+            get
+            {
+                return weight;
+            }
+            set
+            {
+                weight = value;
+            }
+        }
+        /*
         public void SetItemNo(string itemNo)
         {
             this.itemNo = itemNo;
@@ -51,13 +90,6 @@ namespace NAVExtracter
         public void SetWeight(double weight)
         {
             this.weight = weight;
-        }
-
-        public InvoiceLine(string itemNo, string description, double quantity)
-        {
-            this.itemNo = itemNo;
-            this.description = description;
-            this.quantity = quantity;
-        }
+        }        */
     }
 }

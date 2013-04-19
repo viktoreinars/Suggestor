@@ -8,10 +8,11 @@
     <ProjectGuid>{13C7AF29-D0B5-46C7-9B61-CF5C911A57D5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NAVExtracter</RootNamespace>
-    <AssemblyName>NAVExtracter</AssemblyName>
+    <RootNamespace>NAVSuggestor</RootNamespace>
+    <AssemblyName>NAVSuggestor</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

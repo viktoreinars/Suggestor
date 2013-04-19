@@ -46,12 +46,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\TFIDF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SuggestorConnector.cs" />
-    <Compile Include="SuggestorInvoice.cs" />
-    <Compile Include="SuggestorInvoiceFunctions.cs" />
-    <Compile Include="SuggestorInvoiceLine.cs" />
-    <Compile Include="SuggestorItem.cs" />
+    <Compile Include="Implementables\SuggestorCollection.cs" />
+    <Compile Include="SuggestorCollectionFunctions.cs" />
+    <Compile Include="Implementables\SuggestorCollectionLine.cs" />
+    <Compile Include="Implementables\SuggestorItem.cs" />
+    <Compile Include="Implementables\SuggestorRecommender.cs" />
+    <Compile Include="Implementables\SuggestorUser.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

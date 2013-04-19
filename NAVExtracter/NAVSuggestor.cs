@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Suggestor;
+using NAVSuggestor;
 
-namespace NAVExtracter
+namespace NAVSuggestor
 {
     public class NAVSuggestor
     {
-        private Dictionary<string, SuggestorItem> items;
-        private Dictionary<string, SuggestorInvoice> invoices;
+        private Dictionary<string, Item> items;
+        private Dictionary<string, Invoice> invoices;
         private Dictionary<string, User> users;
         private SuggestorConnector suggestor;
 
@@ -31,10 +32,53 @@ namespace NAVExtracter
 
         private void Initialize()
         {
+            // Fetch data from NAV web service
             GetData();
-            suggestor = new SuggestorConnector(invoices, items);
+            // Initialize a suggestor instance with TFIDF as the recommender engine.
+            // Pre-Calculations are done in constructor
+
+            Dictionary<string, SuggestorCollection> testInvoices = invoices.ToDictionary(x => (x.Key), x => (SuggestorCollection)x.Value);
+            Dictionary<string, SuggestorItem> testItems = items.ToDictionary(x => (x.Key), x => (SuggestorItem)x.Value);
+            Dictionary<string, SuggestorUser> testUsers = users.ToDictionary(x => (x.Key), x => (SuggestorUser)x.Value);
+
+            suggestor = new SuggestorConnector(testInvoices, testItems, testUsers, new Suggestor.Algorithms.TFIDF(10));
             suggestor.Initialize();
         }
+
+        public void Foo(SuggestorCollection collection)
+        {
+
+        }
+
+        public Dictionary<string, double> GetRecommendedItemsScore(Invoice compareInvoice, int n)
+        {
+            return suggestor.SuggestItems(compareInvoice, n);
+            //return suggestor.GetRecommendedItems(compareInvoice);
+        }
+
+        public List<Item> GetRecommendedItems(Invoice compareInvoice, int n)
+        {
+            Dictionary<string, double> recommendedScores = suggestor.SuggestItems(compareInvoice, n);
+            List<Item> recommendedItems = new List<Item>();
+            foreach (string id in recommendedScores.Keys)
+            {
+                recommendedItems.Add(GetItems()[id]);
+            }
+            return recommendedItems;
+        }
+
+        public void GetData()
+        {
+            NAVExtracter extracter = new NAVExtracter();
+            string dateFilter = "1.1.2005..1.2.2010";
+            items = extracter.GetItems(dateFilter);
+
+            Tuple<Dictionary<string, User>, Dictionary<string, Invoice>> invoicesAndCustomers = extracter.GetInvoices(dateFilter);
+            invoices = invoicesAndCustomers.Item2;
+            users = invoicesAndCustomers.Item1;
+        }
+
+        #region Basket/Getters
 
         public Dictionary<string, Item> GetItems()
         {
@@ -46,7 +90,7 @@ namespace NAVExtracter
         {
             // TODO: Might be slow, iteration
             return invoices.ToDictionary(x => (x.Key), x => (Invoice)x.Value);
-        }  
+        }
 
         public Dictionary<string, Item> GetCurrentItems()
         {
@@ -58,8 +102,8 @@ namespace NAVExtracter
             Invoice currentInvoice = new Invoice("CompareInvoiceId", "CompareUserId");
             foreach (KeyValuePair<string, Item> itemIdAndItem in GetCurrentItems())
             {
-                currentInvoice.GetInvoiceLines().Add(itemIdAndItem.Key,
-                         new InvoiceLine(itemIdAndItem.Key, GetItems()[itemIdAndItem.Key].GetDescription(), itemIdAndItem.Value.GetQuantity()));
+                currentInvoice.InvoiceLines.Add(itemIdAndItem.Key,
+                         new InvoiceLine(itemIdAndItem.Key, GetItems()[itemIdAndItem.Key].Description, itemIdAndItem.Value.Quantity));
             }
             return currentInvoice;
         }
@@ -68,12 +112,12 @@ namespace NAVExtracter
         {
             if (currentItems.ContainsKey(itemId))
             {
-                currentItems[itemId].SetQuantity(currentItems[itemId].GetQuantity() + quantity);
+                currentItems[itemId].Quantity = currentItems[itemId].Quantity + quantity;
             }
             else
             {
                 Item itemToAdd = (Item)items[itemId].DeepCopy();
-                itemToAdd.SetQuantity(quantity);
+                itemToAdd.Quantity = quantity;
                 currentItems.Add(itemId, itemToAdd);
             }
         }
@@ -86,20 +130,11 @@ namespace NAVExtracter
             }
         }
 
-        public Dictionary<string, double> GetRecommendedItems(Invoice compareInvoice)
+        public void ClearBasket()
         {
-            return suggestor.GetRecommendedItems(compareInvoice);
+            currentItems.Clear();
         }
 
-        public void GetData()
-        {
-            NAVExtracter extracter = new NAVExtracter();
-            string dateFilter = "1.1.2005..1.2.2010";
-            items = extracter.GetItems(dateFilter);
-
-            Tuple<Dictionary<string, User>, Dictionary<string, SuggestorInvoice>> invoicesAndCustomers = extracter.GetInvoices(dateFilter);
-            invoices = invoicesAndCustomers.Item2;
-            users = invoicesAndCustomers.Item1;
-        }
+        #endregion
     }
 }

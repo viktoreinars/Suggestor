@@ -2,19 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Suggestor;
 
-namespace NAVExtracter
+namespace NAVSuggestor
 {
-    public class User
+    public class User : SuggestorUser
     {
         private string id;
         private string name;
-        private List<Invoice> purchaseInvoices;
+        private Dictionary<string, Invoice> purchaseInvoices;
+
+        public User() { }
+
+        public User(string id, string name)
+        {
+            this.id = id;
+            this.name = name;
+            this.purchaseInvoices = new Dictionary<string, Invoice>();
+        }
+
+        public User(string id, string name, Dictionary<string, Invoice> purchaseInvoices)
+        {
+            this.id = id;
+            this.name = name;
+            this.purchaseInvoices = purchaseInvoices;
+        }
 
         #region Getters/Setters
 
-        public List<Invoice> PurchaseInvoices
+        public Dictionary<string, Invoice> PurchaseInvoices
         {
             get { return purchaseInvoices; }
             set { purchaseInvoices = value; }
@@ -26,7 +43,7 @@ namespace NAVExtracter
             set { name = value; }
         }
 
-        public string Id
+        public string CustomerId
         {
             get { return id; }
             set { id = value; }
@@ -34,18 +51,44 @@ namespace NAVExtracter
   
         #endregion
 
-        public User(string id, string name)
+        #region Suggestor Implementations
+
+        [XmlElement(ElementName = "Id")]
+        public string Id
         {
-            this.id = id;
-            this.name = name;
-            this.purchaseInvoices = new List<Invoice>();
+            get
+            {
+                return id;
+            }
+            set
+            {
+                id = value;
+            }
         }
 
-        public User(string id, string name, List<Invoice> purchaseInvoices)
+        [XmlArrayAttribute("Invoices")]
+        public Dictionary<string, SuggestorCollection> Collections
         {
-            this.id = id;
-            this.name = name;
-            this.purchaseInvoices = purchaseInvoices;
+            get
+            {
+                return PurchaseInvoices.ToDictionary(x => (x.Key), x => (SuggestorCollection)x.Value);
+            }
+            set
+            {
+                PurchaseInvoices = value.ToDictionary(x => (x.Key), x => (Invoice)x.Value); ;
+            }
         }
+        /*
+        public void SetId(string userId)
+        {
+            Id = userId;
+        }
+
+        public void SetCollections(Dictionary<string, SuggestorCollection> collections)
+        {
+            PurchaseInvoices = collections.ToDictionary(x => (x.Key), x => (Invoice)x.Value);
+        }*/
+
+        #endregion        
     }
 }

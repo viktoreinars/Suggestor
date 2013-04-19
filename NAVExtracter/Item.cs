@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using Suggestor;
 
-namespace NAVExtracter
+namespace NAVSuggestor
 {
     public class Item : SuggestorItem
     {
         private string id;
         private string description;
-        private int quantity;        
+        private int quantity;
+
+        public Item() { }
 
         public Item(string id, string description, int quantity)
         {
@@ -19,21 +22,45 @@ namespace NAVExtracter
             this.quantity = quantity;
         }
 
-        public string GetId()
+        [XmlElement(ElementName = "Id")]
+        public string Id
         {
-            return id;
+            get
+            {
+                return id;
+            }
+            set
+            {
+                id = value;
+            }
         }
 
-        public string GetDescription()
+        [XmlElement(ElementName = "Description")]
+        public string Description
         {
-            return description;
+            get
+            {
+                return description;
+            }
+            set
+            {
+                description = value;
+            }
         }
 
-        public int GetQuantity()
+        [XmlElement(ElementName = "Quantity")]
+        public int Quantity
         {
-            return quantity;
+            get
+            {
+                return quantity;
+            }
+            set
+            {
+                quantity = value;
+            }
         }
-
+        /*
         public void SetId(string id)
         {
             this.id = id;
@@ -47,7 +74,7 @@ namespace NAVExtracter
         public void SetQuantity(int quantity)
         {
             this.quantity = quantity;
-        }
+        }*/
 
         public SuggestorItem DeepCopy()
         {

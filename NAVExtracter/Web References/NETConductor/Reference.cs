@@ -13,7 +13,7 @@
 // 
 #pragma warning disable 1591
 
-namespace NAVExtracter.NETConductor {
+namespace NAVSuggestor.NETConductor {
     using System;
     using System.Web.Services;
     using System.Diagnostics;
@@ -61,7 +61,7 @@ namespace NAVExtracter.NETConductor {
         
         /// <remarks/>
         public Basics() {
-            this.Url = global::NAVExtracter.Properties.Settings.Default.NAVExtracter_NETConductor_Basics;
+            this.Url = global::NAVSuggestor.Properties.Settings.Default.NAVExtracter_NETConductor_Basics;
             if ((this.IsLocalFileSystemWebService(this.Url) == true)) {
                 this.UseDefaultCredentials = true;
                 this.useDefaultCredentialsSetExplicitly = false;

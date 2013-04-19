@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using NAVExtracter;
+using NAVSuggestor;
 
 namespace SuggestorWeb
 {
@@ -12,11 +12,10 @@ namespace SuggestorWeb
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            NAVSuggestor suggestorInstance = NAVSuggestor.GetInstance();
+            NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
             //SuggestorConnector suggestorInstance = SuggestorConnector.GetInstance();
 
-            // Items grid
-            
+            // Items grid            
             Dictionary<string, Item> items = suggestorInstance.GetItems();
             itemsGrid.DataSource = items;
             itemsGrid.DataBind();
@@ -27,10 +26,11 @@ namespace SuggestorWeb
             basketGrid.DataBind();
 
             // Recommended Items
+            int noOfRecommenderItems = 5;
             Invoice basketInvoice = suggestorInstance.GetBasketInvoice();
             if (basketInvoice != null)
             {
-                Dictionary<string, double> recommendedItems = suggestorInstance.GetRecommendedItems(basketInvoice);
+                Dictionary<string, double> recommendedItems = suggestorInstance.GetRecommendedItemsScore(basketInvoice, noOfRecommenderItems);
                 recommendedItemsGrid.DataSource = recommendedItems;
                 recommendedItemsGrid.DataBind();
             }
@@ -39,14 +39,14 @@ namespace SuggestorWeb
         protected void AddItemToBasket(object sender, System.Web.UI.WebControls.CommandEventArgs e)
         {
             string itemId = (string)e.CommandArgument;
-            NAVSuggestor.GetInstance().AddBasketItem(itemId, 1); // TODO: Quantity
+            NAVSuggestor.NAVSuggestor.GetInstance().AddBasketItem(itemId, 1); // TODO: Quantity
             basketGrid.DataBind();
         }
 
         protected void RemoveItemFromBasket(object sender, System.Web.UI.WebControls.CommandEventArgs e)
         {
             string itemId = (string)e.CommandArgument;
-            NAVSuggestor.GetInstance().RemoveBasketItem(itemId, 1); // TODO: Quantity
+            NAVSuggestor.NAVSuggestor.GetInstance().RemoveBasketItem(itemId, 1); // TODO: Quantity
             basketGrid.DataBind();
         }
 
