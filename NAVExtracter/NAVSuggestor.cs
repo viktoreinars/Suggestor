@@ -50,6 +50,27 @@ namespace NAVSuggestor
 
         }
 
+        public List<Item> GetRandomItems(int k)
+        {
+            List<Item> randomItems = new List<Item>();
+            List<int> used = new List<int>();
+            Random random = new Random();
+            int i = 1;
+            int max = this.items.Values.Count;
+            while(i <= k)
+            {
+                int index = random.Next(0, max);
+                if (!used.Contains(index))
+                {
+                    Item randomItem = this.items.Values.ElementAt<Item>(index);
+                    randomItems.Add(randomItem);
+                    used.Add(index);
+                    i++;
+                }
+            }
+            return randomItems;
+        }
+
         public Dictionary<string, double> GetRecommendedItemsScore(Invoice compareInvoice, int n)
         {
             return suggestor.SuggestItems(compareInvoice, n);

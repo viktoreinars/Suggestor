@@ -20,11 +20,12 @@ namespace NAVSuggestorWS
     {
 
         [WebMethod]
-        public void InitializeBasket()
+        public bool ResetBasket()
         {
             // TODO: Every web service user uses the same basket!
             NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
             suggestorInstance.ClearBasket();
+            return true;
         }
 
         [WebMethod]
@@ -32,6 +33,14 @@ namespace NAVSuggestorWS
         {
             NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
             suggestorInstance.AddBasketItem(itemId, quantity);
+            return true;
+        }
+
+        [WebMethod]
+        public bool RemoveBasketItem(string itemId, int quantity)
+        {
+            NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
+            suggestorInstance.RemoveBasketItem(itemId, quantity);
             return true;
         }
 
@@ -64,5 +73,20 @@ namespace NAVSuggestorWS
             XmlDocument itemsDoc = InvoiceSerializer.ObjectToXml(recommendedItems, typeof(List<Item>));
             return itemsDoc;
         }
+
+        /// <summary>
+        /// This is most useful for the initialization of the UI. Since the user needs to view some items before he adds them to the cart.
+        /// </summary>
+        /// <param name="n">Number of items to be retrieve</param>
+        /// <returns></returns>
+        [WebMethod]
+        public XmlDocument GetRandomItems(int n)
+        {
+            NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
+            List<Item> randomItems = suggestorInstance.GetRandomItems(n);
+            XmlDocument itemsDoc = InvoiceSerializer.ObjectToXml(randomItems, typeof(List<Item>));
+            return itemsDoc;
+        }
+
     }
 }

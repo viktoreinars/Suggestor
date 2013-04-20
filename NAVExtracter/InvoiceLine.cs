@@ -7,9 +7,10 @@ using Suggestor;
 
 namespace NAVSuggestor
 {
+    [XmlRoot(ElementName = "Item")]
     public class InvoiceLine : SuggestorCollectionLine
     {
-        private string itemNo;
+        private string id;
         private string description;
         private double quantity;
         private double weight;
@@ -18,20 +19,20 @@ namespace NAVSuggestor
 
         public InvoiceLine(string itemNo, string description, double quantity)
         {
-            this.itemNo = itemNo;
+            this.id = itemNo;
             this.description = description;
             this.quantity = quantity;
         }
 
-        public string ItemNo
+        public string Id
         {
             get
             {
-                return itemNo;
+                return id;
             }
             set
             {
-                itemNo = value;
+                id = value;
             }
         }
 
@@ -59,7 +60,8 @@ namespace NAVSuggestor
             }
         }
 
-        // TODO: Ignore this?
+        // TODO: Ignore this? At least for now we can bring it back later
+        [XmlIgnore]
         public double Weight
         {
             get

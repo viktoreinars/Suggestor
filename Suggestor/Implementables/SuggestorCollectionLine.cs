@@ -7,7 +7,7 @@ namespace Suggestor
 {
     public interface SuggestorCollectionLine
     {
-        string ItemNo { get; set; }
+        string Id { get; set; }
         string Description { get; set; }
         double Quantity { get; set; }
         double Weight { get; set; }
