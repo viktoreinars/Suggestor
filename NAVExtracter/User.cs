@@ -11,7 +11,7 @@ namespace NAVSuggestor
     {
         private string id;
         private string name;
-        private Dictionary<string, Invoice> purchaseInvoices;
+        private List<Invoice> purchaseInvoices;
 
         public User() { }
 
@@ -19,10 +19,10 @@ namespace NAVSuggestor
         {
             this.id = id;
             this.name = name;
-            this.purchaseInvoices = new Dictionary<string, Invoice>();
+            this.purchaseInvoices = new List<Invoice>();
         }
 
-        public User(string id, string name, Dictionary<string, Invoice> purchaseInvoices)
+        public User(string id, string name, List<Invoice> purchaseInvoices)
         {
             this.id = id;
             this.name = name;
@@ -31,7 +31,7 @@ namespace NAVSuggestor
 
         #region Getters/Setters
 
-        public Dictionary<string, Invoice> PurchaseInvoices
+        public List<Invoice> PurchaseInvoices
         {
             get { return purchaseInvoices; }
             set { purchaseInvoices = value; }
@@ -53,7 +53,6 @@ namespace NAVSuggestor
 
         #region Suggestor Implementations
 
-        [XmlElement(ElementName = "Id")]
         public string Id
         {
             get
@@ -66,7 +65,7 @@ namespace NAVSuggestor
             }
         }
 
-        [XmlArrayAttribute("Invoices")]
+        /*
         public Dictionary<string, SuggestorCollection> Collections
         {
             get
@@ -77,17 +76,19 @@ namespace NAVSuggestor
             {
                 PurchaseInvoices = value.ToDictionary(x => (x.Key), x => (Invoice)x.Value); ;
             }
-        }
-        /*
-        public void SetId(string userId)
-        {
-            Id = userId;
-        }
-
-        public void SetCollections(Dictionary<string, SuggestorCollection> collections)
-        {
-            PurchaseInvoices = collections.ToDictionary(x => (x.Key), x => (Invoice)x.Value);
         }*/
+
+        public List<SuggestorCollection> Collections
+        {
+            get
+            {
+                return PurchaseInvoices.Cast<SuggestorCollection>().ToList();
+            }
+            set
+            {
+                PurchaseInvoices = value.Cast<Invoice>().ToList();
+            }
+        }
 
         #endregion        
     }
