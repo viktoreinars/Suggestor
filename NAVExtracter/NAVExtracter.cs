@@ -94,7 +94,7 @@ namespace NAVSuggestor
             foreach (string invoiceNo in invoices.Keys)
             {
                 string customerId = invoices[invoiceNo].UserId;
-                customers[customerId].Collections.Add(invoiceNo, (Invoice)invoices[invoiceNo]);
+                customers[customerId].Collections.Add((Invoice)invoices[invoiceNo]);
             }
             
             return Tuple.Create(customers, invoices);
