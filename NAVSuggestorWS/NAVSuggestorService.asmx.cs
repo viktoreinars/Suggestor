@@ -40,12 +40,7 @@ namespace NAVSuggestorWS
         {
             NAVSuggestor.NAVSuggestor suggestorInstance = NAVSuggestor.NAVSuggestor.GetInstance();
             Invoice basketInvoice = suggestorInstance.GetBasketInvoice();
-            if (basketInvoice.InvoiceLines.Count == 0)
-            {
-                XmlDocument errorDocument = new XmlDocument();
-                errorDocument.LoadXml("<Error>Basket invoice is empty</Error>");
-                return errorDocument;
-            }
+            if (basketInvoice.InvoiceLines.Count == 0) return GetError("Basket invoice is empty");
             return InvoiceSerializer.ObjectToXml(basketInvoice, typeof(Invoice));
         }
 
@@ -64,5 +59,16 @@ namespace NAVSuggestorWS
             XmlDocument itemsDoc = InvoiceSerializer.ObjectToXml(recommendedItems, typeof(List<Item>));
             return itemsDoc;
         }
+
+        #region Helper Functions
+
+        private XmlDocument GetError(string errorMessage)
+        {
+            XmlDocument errorDocument = new XmlDocument();
+            errorDocument.LoadXml("<Error>" + errorMessage + "</Error>");
+            return errorDocument;
+        }
+
+        #endregion
     }
 }

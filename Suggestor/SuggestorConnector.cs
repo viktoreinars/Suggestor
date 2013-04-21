@@ -40,6 +40,11 @@ namespace Suggestor
             return recommenderEngine.SuggestNCollections(collections, compareCollection, n);
         }
 
+        public Dictionary<SuggestorUser, double> SuggestUsers(SuggestorUser user, int n)
+        {
+            return recommenderEngine.SuggestNUsers(users.Values.ToList(), user, n);
+        }
+
         /*
         public void Initialize()
         {

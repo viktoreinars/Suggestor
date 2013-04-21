@@ -6,14 +6,15 @@ using Suggestor;
 
 namespace MovieSuggestor
 {
-    public class Ranking : SuggestorCollectionLine
+    public partial class Rating : SuggestorCollectionLine
     {
 
-        public string ItemNo
+        public string Id
         {
             get
             {
-                throw new NotImplementedException();
+                // TODO: Not unique but enough?
+                return MovieId.ToString();
             }
             set
             {
@@ -25,7 +26,7 @@ namespace MovieSuggestor
         {
             get
             {
-                throw new NotImplementedException();
+                return Rating1.ToString() + " stars for " + MovieExtracter.GetInstance().GetMovie(MovieId).Title;
             }
             set
             {
@@ -37,7 +38,7 @@ namespace MovieSuggestor
         {
             get
             {
-                throw new NotImplementedException();
+                return Rating1;
             }
             set
             {
@@ -49,11 +50,11 @@ namespace MovieSuggestor
         {
             get
             {
-                throw new NotImplementedException();
+                return Rating1;
             }
             set
             {
-                throw new NotImplementedException();
+                Rating1 = (int)value;
             }
         }
     }

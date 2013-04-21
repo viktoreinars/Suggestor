@@ -11,21 +11,18 @@ namespace MovieSuggestor
 {
     using System;
     using System.Collections.Generic;
-    using System.Xml.Serialization;
+using System.Xml.Serialization;
     
-    public partial class User
+    public partial class Rating
     {
-        public User()
-        {
-            this.Rating = new HashSet<Rating>();
-        }
+        public int UserId { get; set; }
+        public int MovieId { get; set; }
+        public int Rating1 { get; set; }
+        public Nullable<int> Timestamp { get; set; }
     
-        public int Id { get; set; }
-        public Nullable<int> Age { get; set; }
-        public string Gender { get; set; }
-        public string Occupation { get; set; }
-        public string Zipcode { get; set; }
+        [XmlIgnore] // Want this included?
+        public virtual Movie Movie { get; set; }
         [XmlIgnore]
-        public virtual ICollection<Rating> Rating { get; set; }
+        public virtual User User { get; set; }
     }
 }

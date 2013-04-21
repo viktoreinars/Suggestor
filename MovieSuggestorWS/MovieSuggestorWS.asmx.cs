@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
+using System.Xml;
+using MovieSuggestor;
 
 namespace MovieSuggestorWS
 {
@@ -18,9 +20,56 @@ namespace MovieSuggestorWS
     {
 
         [WebMethod]
-        public string HelloWorld()
+        public XmlDocument GetUser(int id)
         {
-            return "Hello World";
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            User user = suggestorInstance.GetUser(id);
+            // Every user has 20+ ratings associated with himself
+            
+            return MovieSerializer.ObjectToXml(user, typeof(User));
         }
+
+        [WebMethod]
+        public bool SelectUser(int id)
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            suggestorInstance.SelectUser(id);
+            return true;
+        }
+
+        [WebMethod]
+        public XmlDocument GetRecommendedMovies(int n)
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            List<Movie> movies = suggestorInstance.RecommendMovies(n);
+            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+        }
+
+        [WebMethod]
+        public XmlDocument GetMovies()
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            List<Movie> movies = suggestorInstance.GetMovies();
+            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+        }
+
+        [WebMethod]
+        public XmlDocument GetMovie(int id)
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            Movie movies = suggestorInstance.GetMovie(id);
+            return MovieSerializer.ObjectToXml(movies, typeof(Movie));
+        }
+
+        #region Helper Functions
+
+        private XmlDocument GetError(string errorMessage)
+        {
+            XmlDocument errorDocument = new XmlDocument();
+            errorDocument.LoadXml("<Error>" + errorMessage + "</Error>");
+            return errorDocument;
+        }
+
+        #endregion
     }
 }

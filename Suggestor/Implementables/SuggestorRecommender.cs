@@ -10,5 +10,6 @@ namespace Suggestor
         public abstract void PreCalculation(Dictionary<string, SuggestorCollection> collections, Dictionary<string, SuggestorItem> items);
         public abstract Dictionary<string, double> SuggestNItems(Dictionary<string, SuggestorCollection> collections, SuggestorCollection compareCollection, int n);
         public abstract Dictionary<SuggestorCollection, double> SuggestNCollections(Dictionary<string, SuggestorCollection> collections, SuggestorCollection compareCollection, int n);
+        public abstract Dictionary<SuggestorUser, double> SuggestNUsers(List<SuggestorUser> users, SuggestorUser user, int n);
     }
 }

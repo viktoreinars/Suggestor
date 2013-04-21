@@ -8,7 +8,6 @@ namespace Suggestor
     public interface SuggestorUser
     {
         string Id { get; set; }
-        //Dictionary<string, SuggestorCollection> Collections { get; set; }
-        List<SuggestorCollection> Collections { get; set; }
+        Dictionary<string, SuggestorCollectionLine> CollectionLines { get; set; }
     }
 }

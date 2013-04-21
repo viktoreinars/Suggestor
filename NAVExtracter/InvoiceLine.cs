@@ -23,7 +23,7 @@ namespace NAVSuggestor
             this.quantity = quantity;
         }
 
-        public string ItemNo
+        public string Id
         {
             get
             {

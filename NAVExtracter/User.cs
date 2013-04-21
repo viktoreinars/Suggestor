@@ -78,18 +78,19 @@ namespace NAVSuggestor
             }
         }*/
 
-        public List<SuggestorCollection> Collections
+        #endregion        
+    
+
+        public Dictionary<string, SuggestorCollectionLine> CollectionLines
         {
             get
             {
-                return PurchaseInvoices.Cast<SuggestorCollection>().ToList();
+                throw new NotImplementedException();
             }
             set
             {
-                PurchaseInvoices = value.Cast<Invoice>().ToList();
+                throw new NotImplementedException();
             }
         }
-
-        #endregion        
     }
 }
