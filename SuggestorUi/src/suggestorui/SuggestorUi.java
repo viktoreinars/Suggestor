@@ -39,6 +39,9 @@ public class SuggestorUi
     public static void main(String[] args) 
     {
         
+        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        
+        
         AddBasketItemMessage message = new AddBasketItemMessage("1996-S", 3);
         //GetBasketMessage message = new GetBasketMessage();
         //GetRecommendationMessage message = new GetRecommendationMessage(5);

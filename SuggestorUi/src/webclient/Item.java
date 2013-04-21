@@ -66,7 +66,7 @@ public abstract class Item
             return response.getItems();
         }
     }
-    
+        
     public static <T extends Item> T createFromXml(Class<T> classname, String xml)
     {
         Serializer serializer = new Persister();
