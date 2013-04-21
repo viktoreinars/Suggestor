@@ -12,7 +12,7 @@ namespace MovieSuggestor
     using System;
     using System.Collections.Generic;
 using System.Xml.Serialization;
-    
+
     public partial class Movie
     {
         public Movie()

@@ -72,6 +72,7 @@
     <Compile Include="Rating.cs">
       <DependentUpon>Movielens.tt</DependentUpon>
     </Compile>
+    <Compile Include="SuggestorSerializeable.cs" />
     <Compile Include="User.cs">
       <DependentUpon>Movielens.tt</DependentUpon>
     </Compile>

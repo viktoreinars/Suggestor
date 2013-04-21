@@ -73,25 +73,5 @@ namespace NAVSuggestor
                 weight = value;
             }
         }
-        /*
-        public void SetItemNo(string itemNo)
-        {
-            this.itemNo = itemNo;
-        }
-
-        public void SetDescription(string description)
-        {
-            this.description = description;
-        }
-
-        public void SetQuantity(double quantity)
-        {
-            this.quantity = quantity;
-        }
-
-        public void SetWeight(double weight)
-        {
-            this.weight = weight;
-        }        */
     }
 }

@@ -30,17 +30,26 @@ namespace MovieSuggestorWS
         }
 
         [WebMethod]
-        public bool SelectUser(int id)
+        public XmlDocument SelectUser(int id)
         {
             MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
             suggestorInstance.SelectUser(id);
-            return true;
+            return GetUser(id);
+        }
+
+        [WebMethod]
+        public XmlDocument SelectRandomUser()
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            User randomUser = suggestorInstance.SelectRandomUser();
+            return MovieSerializer.ObjectToXml(randomUser, typeof(User));
         }
 
         [WebMethod]
         public XmlDocument GetRecommendedMovies(int n)
         {
             MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
             List<Movie> movies = suggestorInstance.RecommendMovies(n);
             return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
         }

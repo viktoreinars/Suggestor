@@ -48,6 +48,13 @@ namespace MovieSuggestor
         public User GetUser(int id)
         {
             return db.User.Include("Rating").Where(user => user.Id == id).First();
-        }        
+        }
+
+        public User GetRandomUser()
+        {
+            Random random = new Random();
+            int randomId  = random.Next(db.User.Count()-1);
+            return GetUser(randomId);
+        } 
     }
 }

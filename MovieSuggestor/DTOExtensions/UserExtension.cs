@@ -7,6 +7,7 @@ using Suggestor;
 
 namespace MovieSuggestor
 {
+    [XmlType("Item")]
     public partial class User : SuggestorUser
     {
 

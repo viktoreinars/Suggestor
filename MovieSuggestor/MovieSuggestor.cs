@@ -43,6 +43,13 @@ namespace MovieSuggestor
             currentUser = GetUser(id);
         }
 
+        public User SelectRandomUser()
+        {
+            User randomUser = MovieExtracter.GetInstance().GetRandomUser();
+            currentUser = randomUser;
+            return currentUser;
+        }
+
         public List<User> GetUsers()
         {
             return MovieExtracter.GetInstance().GetUsers();
@@ -61,6 +68,11 @@ namespace MovieSuggestor
         public Movie GetMovie(int id)
         {
             return MovieExtracter.GetInstance().GetMovie(id);
+        }
+
+        public User GetCurrentUser()
+        {
+            return currentUser;
         }
 
         public List<Movie> RecommendMovies(int n)
