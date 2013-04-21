@@ -85,6 +85,7 @@ namespace NAVSuggestor
         }
 
         // For serialization. Ugly!
+        [XmlElement(ElementName = "Item")]
         public List<InvoiceLine> Lines
         {
             get
