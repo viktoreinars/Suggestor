@@ -6,6 +6,8 @@ package webclient;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
+import suggestorui.Displayable;
+import suggestorui.Styleable;
 
 /**
  *
@@ -14,7 +16,7 @@ import org.simpleframework.xml.Root;
  */
 
 @Root(name="Item")
-public class InvoiceItem extends Item
+public class InvoiceItem extends Item implements Displayable, Styleable
 {
     protected InvoiceItem() { }
     
@@ -39,6 +41,7 @@ public class InvoiceItem extends Item
     /**
      * @return the description
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -49,6 +52,31 @@ public class InvoiceItem extends Item
     @Override
     public int getQuantity() {
         return quantity;
+    }
+
+    @Override
+    public String getTitle() 
+    {
+        return this.itemid;
+    }
+
+    @Override
+    public String getIconPath() 
+    {
+        return "";
+    }
+
+    @Override
+    public String getStyle() 
+    {
+        return "";
+    }
+
+
+    @Override
+    public String getUiLabel() 
+    {
+        return this.itemid;
     }
 
 }

@@ -39,25 +39,25 @@ public class SuggestorUi
     public static void main(String[] args) 
     {
         
-        //AddBasketItemMessage message = new AddBasketItemMessage("1996-S", 3);
+        AddBasketItemMessage message = new AddBasketItemMessage("1996-S", 3);
         //GetBasketMessage message = new GetBasketMessage();
         //GetRecommendationMessage message = new GetRecommendationMessage(5);
         //ResetBasketMessage message = new ResetBasketMessage();
-        GetRandomItemMessage message = new GetRandomItemMessage(6);
-        SuggestorItemListResponse<InvoiceItem> response = (SuggestorItemListResponse<InvoiceItem>) SuggestorClient.getCurent().sendMessage(message);
-        //SuggestorValueResponse response = (SuggestorValueResponse) SuggestorClient.getCurent().sendMessage(message);
+        //GetRandomItemMessage message = new GetRandomItemMessage(6);
+        //SuggestorItemListResponse<InvoiceItem> response = (SuggestorItemListResponse<InvoiceItem>) SuggestorClient.getCurent().sendMessage(message);
+        SuggestorValueResponse response = (SuggestorValueResponse) SuggestorClient.getCurent().sendMessage(message);
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
         }
         else
         {
-            //System.out.println("Response Message: " + response.getValue());
-            System.out.println("Items Retrieved: " + response.getItems().size());
-            for(InvoiceItem item : response.getItems())
-            {
-                System.out.println(item.getItemId());
-            }
+            System.out.println("Response Message: " + response.getValue());
+//            System.out.println("Items Retrieved: " + response.getItems().size());
+//            for(InvoiceItem item : response.getItems())
+//            {
+//                System.out.println(item.getItemId());
+//            }
         }
 //        HttpClient client = new DefaultHttpClient();
 //        HttpPost post = new HttpPost("http://localhost:59274/NAVSuggestorService.asmx/AddBasketItem");

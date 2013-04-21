@@ -1,0 +1,41 @@
+/* 
+    Document   : MovieItem
+    Created on : Apr 21, 2013, 1:12:04 PM
+    Author     : El Zede @ CSDL
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+graph
+{    
+}
+
+edge
+{
+    size: 4px; 
+    fill-color: #444;
+}
+
+node
+{
+    fill-mode: image-scaled-ratio-max;
+    size: 60px;
+    stroke-mode: plain;
+    stroke-color: grey;
+}
+
+node:clicked
+{
+    shadow-mode: plain;
+    shadow-width: 3px;
+    shadow-color: #FC0; 
+    shadow-offset: 0px;
+}
+
+node:selected
+{
+    shadow-mode: plain;
+    shadow-width: 3px;
+    shadow-color: #FC0; 
+    shadow-offset: 0px;
+}
