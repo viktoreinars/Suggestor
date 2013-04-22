@@ -12,14 +12,16 @@ namespace MovieSuggestor
     }
 
     [Serializable]
-    [XmlType(TypeName = "AttributeValue")]
+    [XmlType(TypeName = "Attribute")]
     public struct KeyValuePair<K, V>
     {
         public KeyValuePair(K k, V v) : this() { Key = k; Value = v; }
 
+        [XmlAttribute]
         public K Key
         { get; set; }
 
+        [XmlAttribute]
         public V Value
         { get; set; }
     }

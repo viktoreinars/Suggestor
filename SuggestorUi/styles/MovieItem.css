@@ -19,9 +19,10 @@ edge
 node
 {
     fill-mode: image-scaled-ratio-max;
-    size: 60px;
+    size: 70px, 95px;
     stroke-mode: plain;
     stroke-color: grey;
+    shape : box;
 }
 
 node:clicked

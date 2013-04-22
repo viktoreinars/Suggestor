@@ -2,28 +2,31 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package webclient;
-
-import suggestorui.Configuration;
+package webclient.messaging;
 
 /**
  *
  * @author El Zede
  * @ CSDL
  */
-public class GetBasketMessage extends SuggestorMessage
+public class GetMovieRecommendationsMessage extends SuggestorMessage
 {
 
-    @Override
-    public String getName() 
+    public GetMovieRecommendationsMessage(int k)
     {
-        return "Get Basket";
+        this.addParameter("n", new Integer(k).toString());
     }
     
     @Override
+    public String getName() 
+    {
+        return "Get Recommended Movies";
+    }
+
+    @Override
     public String getOperation() 
     {
-        return "GetBasket";
+        return "GetRecommendedMovies";
     }
 
     @Override

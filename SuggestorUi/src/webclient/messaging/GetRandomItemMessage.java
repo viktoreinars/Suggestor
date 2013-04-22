@@ -2,30 +2,31 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package webclient;
+package webclient.messaging;
 
 /**
  *
- * @author Gabriel Dzodom
+ * @author El Zede
  * @ CSDL
  */
-public class GetRecommendationMessage extends SuggestorMessage
+public class GetRandomItemMessage extends SuggestorMessage 
 {
-    public GetRecommendationMessage(int n)
-    {
-        this.addParameter("n", new Integer(n).toString());
-    }
 
+    public GetRandomItemMessage(int k)
+    {
+        this.addParameter("n", new Integer(k).toString());
+    }
+    
     @Override
     public String getName() 
     {
-        return "Get Recommendations ";
+        return "Get Random Items";
     }
 
     @Override
     public String getOperation() 
     {
-        return "GetRecommendedItems";
+        return "GetRandomItems";
     }
 
     @Override
@@ -33,4 +34,5 @@ public class GetRecommendationMessage extends SuggestorMessage
     {
         return SuggestorMessage.ENTITY_LIST_RESPONSE;
     }
+    
 }

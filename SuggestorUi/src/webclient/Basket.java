@@ -4,11 +4,17 @@
  */
 package webclient;
 
+import webclient.messaging.ResetBasketMessage;
+import webclient.messaging.GetBasketMessage;
+import webclient.messaging.GetRecommendationMessage;
+import webclient.messaging.SuggestorClient;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import suggestorui.Configuration;
-import webclient.SuggestorClient.SuggestorItemListResponse;
-import webclient.SuggestorClient.SuggestorValueResponse;
+import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
+import webclient.messaging.SuggestorClient.SuggestorValueResponse;
 
 /**
  *
@@ -40,14 +46,14 @@ public class Basket
         item.removeFromBasket();
     }
     
-    public <T extends Item> List<T> getItems()
+    public <T extends Item> Map<String, T> getItems()
     {
         GetBasketMessage message = new GetBasketMessage();
         SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
-            return new ArrayList<>();
+            return new HashMap<>();
         }
         else
         {
@@ -55,7 +61,7 @@ public class Basket
         }
     }
     
-    public <T extends Item> List<T> getRecommendations()
+    public <T extends Item> Map<String, T> getRecommendations()
     {
         int k = Integer.parseInt(Configuration.getValue("sizeofrecommendeditems"));
         GetRecommendationMessage message = new GetRecommendationMessage(k);
@@ -63,7 +69,7 @@ public class Basket
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
-            return new ArrayList<>();
+            return new HashMap<>();
         }
         else
         {

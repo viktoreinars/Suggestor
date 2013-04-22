@@ -4,15 +4,21 @@
  */
 package webclient;
 
+import webclient.messaging.GetRandomItemMessage;
+import webclient.messaging.RemoveBasketItemMessage;
+import webclient.messaging.AddBasketItemMessage;
+import webclient.messaging.SuggestorClient;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 import suggestorui.Configuration;
-import webclient.SuggestorClient.SuggestorItemListResponse;
-import webclient.SuggestorClient.SuggestorValueResponse;
+import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
+import webclient.messaging.SuggestorClient.SuggestorValueResponse;
 
 /**
  *
@@ -51,7 +57,7 @@ public abstract class Item
     public abstract String getItemId();
     public abstract int getQuantity();
     
-    public static <T extends Item> List<T> getRandomItems()
+    public static <T extends Item> Map<String, T> getRandomItems()
     {
         int k = Integer.parseInt(Configuration.getValue("sizeofrandomitems"));
         GetRandomItemMessage message = new GetRandomItemMessage(k);
@@ -59,7 +65,7 @@ public abstract class Item
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
-            return new ArrayList<>();
+            return new HashMap<>();
         }
         else
         {

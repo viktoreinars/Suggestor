@@ -2,14 +2,16 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package webclient;
+package webclient.messaging;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -32,6 +34,8 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import suggestorui.Configuration;
+import webclient.Item;
+import webclient.User;
 
 /**
  *
@@ -84,15 +88,65 @@ public class SuggestorClient extends DefaultHttpClient
         {
             return new SuggestorItemListResponse(response);
         }
+        else if(message.getResponseType() == SuggestorMessage.ENTITY_RESPONSE)
+        {
+            return new SuggestorUserResponse(response);
+        }
         else
         {
             return new SuggestorResponse(response);
         }
     }
     
+    public class SuggestorUserResponse extends SuggestorResponse
+    {
+        private User user;
+        
+        public SuggestorUserResponse(HttpResponse response)
+        {
+            super(response);
+        }
+
+        @Override
+        protected void extractContent(String content) 
+        {
+            super.extractContent(content);
+            user = null;
+            DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+            try 
+            {            
+                DocumentBuilder builder = domFactory.newDocumentBuilder();
+                InputSource source = new InputSource();
+                source.setCharacterStream(new StringReader(content));
+                Document doc = builder.parse(source);
+                
+                XPathFactory xPathFactory = XPathFactory.newInstance();
+                XPath xPath = xPathFactory.newXPath();
+                String expression = "//Item";
+                XPathExpression xPathExpression = xPath.compile(expression);
+                NodeList result = (NodeList)xPathExpression.evaluate(doc, XPathConstants.NODESET);
+                
+                if(result.getLength() > 0)
+                {
+                    user = Item.createFromXml(User.class, this.toInnerXml(result.item(0)));
+                }
+
+            } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException ex) {
+                Logger.getLogger(SuggestorClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        
+        
+        public User getUser()
+        {
+            return user;
+        }
+        
+    }
     public class SuggestorItemListResponse<T extends Item> extends SuggestorResponse
     {
-        private List<T> items;
+        private Map<String, T> items;
         
         public SuggestorItemListResponse(HttpResponse response)
         {
@@ -105,7 +159,7 @@ public class SuggestorClient extends DefaultHttpClient
             super.extractContent(content);
             if(items == null)
             {
-                items = new ArrayList<>();
+                items = new HashMap<>();
             }
             items.clear();
             
@@ -127,31 +181,15 @@ public class SuggestorClient extends DefaultHttpClient
                 for(int i = 0; i < result.getLength(); i++)
                 {
                     T item = Item.createFromXml(classname, this.toInnerXml(result.item(i)));
-                    this.items.add(item);
+                    this.items.put(item.getItemId(), item);
                 }
 
             } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException | ClassNotFoundException ex) {
                 Logger.getLogger(SuggestorClient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-        private String toInnerXml(Node node)
-        {
-            String rootName = node.getNodeName();
-            DOMImplementationLS lsImpl = (DOMImplementationLS)node.getOwnerDocument().getImplementation().getFeature("LS", "3.0");
-            LSSerializer lsSerializer = lsImpl.createLSSerializer();
-            lsSerializer.getDomConfig().setParameter("xml-declaration", false);
-            NodeList childNodes = node.getChildNodes();
-            StringBuilder sb = new StringBuilder();
-            sb.append(String.format("<%s>", rootName));
-            for (int i = 0; i < childNodes.getLength(); i++) {
-               sb.append(lsSerializer.writeToString(childNodes.item(i)));
-            }
-            sb.append(String.format("</%s>", rootName));
-            return sb.toString();         
-        }
-        
-        public List<T> getItems()
+                
+        public Map<String, T> getItems()
         {
             return items;
         }
@@ -276,6 +314,23 @@ public class SuggestorClient extends DefaultHttpClient
             
             return content.substring(beginIndex, endIndex);
         }
+        
+        public String toInnerXml(Node node)
+        {
+            String rootName = node.getNodeName();
+            DOMImplementationLS lsImpl = (DOMImplementationLS)node.getOwnerDocument().getImplementation().getFeature("LS", "3.0");
+            LSSerializer lsSerializer = lsImpl.createLSSerializer();
+            lsSerializer.getDomConfig().setParameter("xml-declaration", false);
+            NodeList childNodes = node.getChildNodes();
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("<%s>", rootName));
+            for (int i = 0; i < childNodes.getLength(); i++) {
+               sb.append(lsSerializer.writeToString(childNodes.item(i)));
+            }
+            sb.append(String.format("</%s>", rootName));
+            return sb.toString();         
+        }
+        
         
         public boolean hasError()
         {

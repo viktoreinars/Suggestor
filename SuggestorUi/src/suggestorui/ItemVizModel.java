@@ -5,7 +5,9 @@
 package suggestorui;
 
 import java.util.List;
+import java.util.Map;
 import org.graphstream.graph.Graph;
+import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import webclient.Item;
 import webclient.User;
@@ -21,7 +23,7 @@ public class ItemVizModel
     private Graph graph;
     public ItemVizModel()
     {
-        String graphInitStyle = Configuration.getValue("item.style");
+        String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));
         graph = new SingleGraph("Movie Recommender");
         graph.addAttribute("ui.stylesheet", graphInitStyle);
         graph.addAttribute("ui.antialias");
@@ -32,26 +34,32 @@ public class ItemVizModel
     
     public boolean buildGraph()
     {
-        List<Item> recommendedItems = User.getCurrent().getRecommendations();
+        Map<String, Item> recommendedItems = User.getCurrent().getRecommendations();
         if(recommendedItems.isEmpty())
         {
             return false;
         }
-        Item center = recommendedItems.get(0);
-        for(int i = 1; i < recommendedItems.size(); i++)
+        Item center = recommendedItems.values().toArray(new Item[0])[0];
+        for(String itemid : recommendedItems.keySet())
         {
             //temporary code right here --- real one coming soon
-            Item sibling = recommendedItems.get(i);
-            this.createEdge(center, sibling);
+            Item sibling = recommendedItems.get(itemid);
+            if(!sibling.getItemId().equals(center.getItemId()))
+            {
+                this.createEdge(center, sibling);
+            }
         }
         if(recommendedItems.size() == 1)
         {
             graph.addNode(center.getItemId());
         }
+        
+        this.updateNodeStyles(recommendedItems);
+        
         return true;
     }
     
-    public void createEdge(Item item1, Item item2)
+    private void createEdge(Item item1, Item item2)
     {
         String edgeKey = item1.getItemId() + "-" + item2.getItemId();
         graph.addEdge(edgeKey, item1.getItemId(), item2.getItemId());
@@ -61,6 +69,14 @@ public class ItemVizModel
     {
         return this.graph;
     }
-    
-    
+
+    private void updateNodeStyles(Map<String, Item> items) 
+    {
+        for(Node node : this.graph.getEachNode())
+        {
+            Styleable item = (Styleable)items.get(node.getId());
+            node.addAttribute("ui.label", item.getUiLabel());
+            node.addAttribute("ui.style", item.getStyle());
+        }
+    }    
 }

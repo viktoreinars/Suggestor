@@ -37,7 +37,8 @@ namespace MovieSuggestor
                 throw new NotImplementedException();
             }
         }
-        // TODO: Ugly
+        // TODO: Ugly...we do not need this for the user
+        [XmlIgnore]
         public List<Rating> Ratings
         {
             get

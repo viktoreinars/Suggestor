@@ -16,15 +16,17 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import webclient.AddBasketItemMessage;
-import webclient.GetBasketMessage;
-import webclient.GetRandomItemMessage;
-import webclient.GetRecommendationMessage;
+import webclient.messaging.AddBasketItemMessage;
+import webclient.messaging.GetBasketMessage;
+import webclient.messaging.GetRandomItemMessage;
+import webclient.messaging.GetRecommendationMessage;
 import webclient.InvoiceItem;
-import webclient.ResetBasketMessage;
-import webclient.SuggestorClient;
-import webclient.SuggestorClient.SuggestorItemListResponse;
-import webclient.SuggestorClient.SuggestorValueResponse;
+import webclient.MovieItem;
+import webclient.User;
+import webclient.messaging.ResetBasketMessage;
+import webclient.messaging.SuggestorClient;
+import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
+import webclient.messaging.SuggestorClient.SuggestorValueResponse;
 
 /**
  *
@@ -40,28 +42,39 @@ public class SuggestorUi
     {
         
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        ItemVizModel model = new ItemVizModel();
+        model.buildGraph();
+        model.getGraph().display();
         
+        //List<MovieItem> movies = User.getCurrent().getRecommendations();
+        //if(user != null)
+//        {
+//            for(MovieItem movie : movies)
+//            {
+//                System.out.println(movie.getTitle());
+//            }
+//        }
         
-        AddBasketItemMessage message = new AddBasketItemMessage("1996-S", 3);
+//        AddBasketItemMessage message = new AddBasketItemMessage("1996-S", 3);
         //GetBasketMessage message = new GetBasketMessage();
         //GetRecommendationMessage message = new GetRecommendationMessage(5);
         //ResetBasketMessage message = new ResetBasketMessage();
         //GetRandomItemMessage message = new GetRandomItemMessage(6);
         //SuggestorItemListResponse<InvoiceItem> response = (SuggestorItemListResponse<InvoiceItem>) SuggestorClient.getCurent().sendMessage(message);
-        SuggestorValueResponse response = (SuggestorValueResponse) SuggestorClient.getCurent().sendMessage(message);
-        if(response.hasError())
-        {
-            System.out.println(response.getErrorMessage());
-        }
-        else
-        {
-            System.out.println("Response Message: " + response.getValue());
+//        SuggestorValueResponse response = (SuggestorValueResponse) SuggestorClient.getCurent().sendMessage(message);
+//        if(response.hasError())
+//        {
+//            System.out.println(response.getErrorMessage());
+//        }
+//        else
+//        {
+//            System.out.println("Response Message: " + response.getValue());
 //            System.out.println("Items Retrieved: " + response.getItems().size());
 //            for(InvoiceItem item : response.getItems())
 //            {
 //                System.out.println(item.getItemId());
 //            }
-        }
+//        }
 //        HttpClient client = new DefaultHttpClient();
 //        HttpPost post = new HttpPost("http://localhost:59274/NAVSuggestorService.asmx/AddBasketItem");
 //        try 

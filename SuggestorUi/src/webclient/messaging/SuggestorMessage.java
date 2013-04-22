@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package webclient;
+package webclient.messaging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,7 @@ public abstract class SuggestorMessage
     private List<NameValuePair> nameValuePairs = new ArrayList<>(1);
     
     public static int VALUE_RESPONSE = 0;
+    public static int ENTITY_RESPONSE = 2;
     public static int ENTITY_LIST_RESPONSE = 1;
     
     public SuggestorMessage( ) { }

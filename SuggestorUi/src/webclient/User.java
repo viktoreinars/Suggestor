@@ -5,24 +5,46 @@
 package webclient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.Root;
 import suggestorui.Configuration;
 import suggestorui.Displayable;
-import webclient.SuggestorClient.SuggestorItemListResponse;
+import webclient.messaging.GetMovieRecommendationsMessage;
+import webclient.messaging.GetRecommendationMessage;
+import webclient.messaging.SuggestorClient;
+import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
+import webclient.messaging.SuggestorClient.SuggestorUserResponse;
+import webclient.messaging.UserMessage;
 
 /**
  *
  * @author Gabriel Dzodom
  * @ CSDL
  */
+
+@Root(name="Item")
 public class User extends Item implements Displayable
 {
-
     private static User current = null;
     
-    private User()
-    {
-    }
+    @Element(name="Id")
+    private String itemId;
+
+    @Element(name="Age")
+    private int age;
+
+    @Element(name="Occupation")
+    private String occupation;
+    
+    @Element(name="Gender")
+    private String gender;
+    
+    @Element(name="Zipcode")
+    private String zipcode;
+    
     
     public static User getCurrent()
     {
@@ -36,7 +58,7 @@ public class User extends Item implements Displayable
     @Override
     public String getItemId() 
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.itemId;
     }
 
     @Override
@@ -45,19 +67,52 @@ public class User extends Item implements Displayable
         return 1;
     }
     
-    public <T extends Item> List<T> getRecommendations()
+    public <T extends Item> Map<String, T> getRecommendations()
     {
         int k = Integer.parseInt(Configuration.getValue("sizeofrecommendeditems"));
-        GetRecommendationMessage message = new GetRecommendationMessage(k);
+        GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(k);
         SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
-            return new ArrayList<>();
+            return new HashMap<>();
         }
         else
         {
             return response.getItems();
+        }
+    }
+    
+    
+    
+    public static User selectUser()
+    {
+        return User.selectUser(Configuration.getValue("current.user.id"));
+    }
+    
+    public static User selectUser(String userid)
+    {
+        return OperateOnUser(userid, UserMessage.SELECTUSER);
+    }
+    
+    public static User selectRandomUser()
+    {
+        return OperateOnUser("", UserMessage.SELECTRANDOMUSER);
+    }
+    
+    
+    private static User OperateOnUser(String userid, String operation)
+    {
+        UserMessage message = new UserMessage(userid, operation);
+        SuggestorUserResponse response = (SuggestorUserResponse)SuggestorClient.getCurent().sendMessage(message);
+        if(response.hasError())
+        {
+            System.out.println(response.getErrorMessage());
+            return null;
+        }
+        else
+        {
+            return response.getUser();
         }
     }
 
@@ -70,12 +125,40 @@ public class User extends Item implements Displayable
     @Override
     public String getDescription() 
     {
-        return "The current user";
+        return String.format("Age: %s\nOccupation: %s\nZipCode: %s", this.getAge(), this.getOccupation(), this.getZipcode());
     }
 
     @Override
     public String getIconPath() 
     {
         return "user_icon.png";
+    }
+
+    /**
+     * @return the age
+     */
+    public int getAge() {
+        return age;
+    }
+
+    /**
+     * @return the occupation
+     */
+    public String getOccupation() {
+        return occupation;
+    }
+
+    /**
+     * @return the gender
+     */
+    public String getGender() {
+        return gender;
+    }
+
+    /**
+     * @return the zipcode
+     */
+    public String getZipcode() {
+        return zipcode;
     }
 }

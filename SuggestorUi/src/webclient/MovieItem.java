@@ -4,23 +4,54 @@
  */
 package webclient;
 
+import java.util.List;
+import java.util.Map;
+import org.simpleframework.xml.Attribute;
+import org.simpleframework.xml.Element;
+import org.simpleframework.xml.ElementList;
+import org.simpleframework.xml.ElementMap;
+import org.simpleframework.xml.Root;
 import suggestorui.Displayable;
 import suggestorui.Styleable;
 
 /**
  *
- * @author El Zede
+ * @author Gabriel Dzodom
  * @ CSDL
  */
+
+@Root(name="Item")
 public class MovieItem extends Item implements Displayable, Styleable
 {
+    @Element(name="Id")
+    private String itemid;
+    @Element(name="Title")
+    private String title;
+    @Element(name="Release_Date")
+    private String releaseDate;
+    @Element(name="Description")
+    private String description;
+    
+    protected MovieItem()
+    {
+        
+    }
+    
+    @ElementList(name="Attributes")
+    private List<MovieAttribute> attributes;
 
     @Override
     public String getItemId() 
     {
-        return "";
+        return this.itemid;
     }
 
+    public String getYear()
+    {
+        return this.releaseDate.split("-")[2];
+    }
+    
+    
     @Override
     public int getQuantity() 
     {
@@ -30,13 +61,13 @@ public class MovieItem extends Item implements Displayable, Styleable
     @Override
     public String getTitle() 
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.title;
     }
 
     @Override
     public String getDescription() 
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.description;
     }
 
     @Override
@@ -56,4 +87,5 @@ public class MovieItem extends Item implements Displayable, Styleable
     {
         return "";
     }
+    
 }
