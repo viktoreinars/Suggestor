@@ -8,7 +8,7 @@ namespace MovieSuggestor
 {
     public interface SuggestorSerializeable
     {
-        List<KeyValuePair<string, string>> Attributes { get; }
+        List<KeyValuePair<string, string>> Attributes { get; set; }
     }
 
     [Serializable]

@@ -97,9 +97,50 @@ namespace MovieSuggestor
 
             List<Movie> recommendedMovies = sortedDict.Keys.Take(n).ToList();
 
-            return recommendedMovies;
+            // Find groups used for recommendations
+            foreach (Movie recommendedMovie in recommendedMovies)
+            {
+                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "AgeGroup");
+                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Occupation");
+                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Gender");
+                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Zipcode");
 
-            //return recommendedUsers.Values.ToList();
+                foreach (User similarUser in recommendedUsers.Keys)
+                {
+                    var ratingList = similarUser.Rating.Where(rating => rating.MovieId == recommendedMovie.Id);
+                    if (ratingList.Count() == 0) continue; // User did not rate this movie
+                    
+                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("AgeGroup", similarUser.AgeGroup));
+                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", similarUser.Occupation));
+                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", similarUser.Gender));
+                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Zipcode", similarUser.Zipcode));
+                    /* Dont need to count
+                    // Age groups                    
+                    if (!(ageGroups.Keys.Contains(similarUser.AgeGroup))) ageGroups.Add(similarUser.AgeGroup, 1);
+                    else ageGroups[similarUser.AgeGroup] += 1;
+
+                    // Occupations
+                    if (!(occupationGroups.Keys.Contains(similarUser.Occupation))) occupationGroups.Add(similarUser.Occupation, 1);
+                    else occupationGroups[similarUser.Occupation] += 1;
+
+                    if (!(genderGroups.Keys.Contains(similarUser.Gender))) genderGroups.Add(similarUser.Gender, 1);
+                    else genderGroups[similarUser.Gender] += 1;
+                    */
+                }
+
+                /* Dont need counting of groups - handled on server side
+                foreach (string ageKey in ageGroups.Keys)
+                {
+                    recommendedMovie.Attributes.Add(new KeyValuePair<string,string>("AgeGroup", ageGroups[ageKey]
+                }*/
+            }
+
+            return recommendedMovies;
+        }
+
+        public List<Movie> GetExtendedMovieRecommendations(int movieId)
+        {
+
         }
     }
 }
