@@ -10,6 +10,20 @@ namespace MovieSuggestor
     [XmlType("Item")]
     public partial class User : SuggestorUser
     {
+        public string AgeGroup
+        {
+            get
+            {
+                string ageKey = "";
+                if (Age == null) return ageKey;
+                double divisionFactor = double.Parse(Age.ToString()) / 5.0;
+                int lower = (int)Math.Floor(divisionFactor) * 5;
+                int higher = (int)Math.Ceiling(divisionFactor) * 5;
+                if (lower == higher) higher += 5;
+                ageKey = lower.ToString() + " - " + higher.ToString();
+                return ageKey;
+            }
+        }
 
         string SuggestorUser.Id
         {

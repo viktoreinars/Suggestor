@@ -46,11 +46,31 @@ namespace MovieSuggestorWS
         }
 
         [WebMethod]
-        public XmlDocument GetRecommendedMovies(int n)
+        public XmlDocument GetRecommendedMovies(int userN, int n)
         {
             MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
             if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
-            List<Movie> movies = suggestorInstance.RecommendMovies(n);
+            List<Movie> movies = suggestorInstance.RecommendMovies(userN, n);
+            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+        }
+
+        /// <summary>
+        /// Gets extended recommendation based on the movie presented. Looks at userN users similar to "us" (current user) and 
+        /// finds secondaryUserN secondary similar users based on those. The top topSecondaryUsersN secondary users are then 
+        /// used from the list. The movies with the top aggregate score of these top secondary users are then returned.
+        /// </summary>
+        /// <param name="movieId"></param>
+        /// <param name="userN">How many users we want to consider that are similar to the current user</param>
+        /// <param name="secondaryUserN">How many users we want to consider that are similar to our similar users (first ones)</param>
+        /// <param name="topSecondaryUsersN">The number of the top secondary users to consider for final movie recommendation</param>
+        /// <param name="n">How many movie recommendations to return</param>
+        /// <returns></returns>
+        [WebMethod]
+        public XmlDocument GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n)
+        {
+            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+            if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
+            List<Movie> movies = suggestorInstance.GetExtendedMovieRecommendations(movieId, userN, secondaryUserN, topSecondaryUsersN, n);
             return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
         }
 
