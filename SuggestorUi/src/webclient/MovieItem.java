@@ -4,6 +4,7 @@
  */
 package webclient;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import org.simpleframework.xml.Attribute;
@@ -73,7 +74,17 @@ public class MovieItem extends Item implements Displayable, Styleable
     @Override
     public String getIconPath() 
     {
-        return String.format("../Databases/ml-100k/PosterImages/%s.jpg", this.getItemId());
+        String template = "../Databases/ml-100k/PosterImages/%s";
+        String path = String.format(template, this.getItemId() + ".jpg");
+        File file = new File(path);
+        if(file.exists())
+        {
+            return path;
+        }
+        else
+        {
+            return String.format(template, "default.png");
+        }
     }
 
     @Override

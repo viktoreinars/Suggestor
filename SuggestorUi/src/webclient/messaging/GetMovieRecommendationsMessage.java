@@ -12,9 +12,10 @@ package webclient.messaging;
 public class GetMovieRecommendationsMessage extends SuggestorMessage
 {
 
-    public GetMovieRecommendationsMessage(int k)
+    public GetMovieRecommendationsMessage(int nFirstUsers, int k)
     {
         this.addParameter("n", new Integer(k).toString());
+        this.addParameter("userN", new Integer(nFirstUsers).toString());
     }
     
     @Override

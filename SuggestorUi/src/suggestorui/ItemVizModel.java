@@ -4,7 +4,6 @@
  */
 package suggestorui;
 
-import java.util.List;
 import java.util.Map;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
@@ -19,8 +18,8 @@ import webclient.User;
  */
 public class ItemVizModel 
 {
-    
     private Graph graph;
+        
     public ItemVizModel()
     {
         String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));

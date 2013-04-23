@@ -12,6 +12,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 import suggestorui.Configuration;
 import suggestorui.Displayable;
+import webclient.messaging.GetExtendedMovieRecommendationsMessage;
 import webclient.messaging.GetMovieRecommendationsMessage;
 import webclient.messaging.GetRecommendationMessage;
 import webclient.messaging.SuggestorClient;
@@ -50,7 +51,9 @@ public class User extends Item implements Displayable
     {
         if(current == null)
         {
-            current = new User();
+            System.out.println("Selecting the User...");
+            current = User.selectUser();
+            System.out.println("Selected User: " + current.getItemId());
         }
         return current;
     }
@@ -69,8 +72,10 @@ public class User extends Item implements Displayable
     
     public <T extends Item> Map<String, T> getRecommendations()
     {
-        int k = Integer.parseInt(Configuration.getValue("sizeofrecommendeditems"));
-        GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(k);
+        System.out.println("Getting the Recommendations...");
+        int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
+        int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
+        GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(nFirstUsers, k);
         SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
         if(response.hasError())
         {
@@ -79,7 +84,32 @@ public class User extends Item implements Displayable
         }
         else
         {
-            return response.getItems();
+            Map<String, T> items = response.getItems();
+            System.out.println(String.format("Fetched %d items...", items.size()));
+            return items;
+        }
+    }
+    
+    public <T extends Item> Map<String, T> getXRecommendations(String movieId)
+    {
+        System.out.println("Getting the Recommendations...");
+        int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
+        int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
+        int nSecondUsers = Integer.parseInt(Configuration.getValue("nSecondUsers"));
+        int kTopSecondUsers = Integer.parseInt(Configuration.getValue("kTopSecondUsers"));
+        
+        GetExtendedMovieRecommendationsMessage message = new GetExtendedMovieRecommendationsMessage(movieId, nFirstUsers, nSecondUsers, kTopSecondUsers, k);
+        SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
+        if(response.hasError())
+        {
+            System.out.println(response.getErrorMessage());
+            return new HashMap<>();
+        }
+        else
+        {
+            Map<String, T> items = response.getItems();
+            System.out.println(String.format("Fetched %d items...", items.size()));
+            return items;
         }
     }
     

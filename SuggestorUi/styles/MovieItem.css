@@ -27,7 +27,7 @@ node
 
 node:clicked
 {
-    shadow-mode: plain;
+    shadow-mode: gradient-radial;
     shadow-width: 3px;
     shadow-color: #FC0; 
     shadow-offset: 0px;
@@ -35,7 +35,7 @@ node:clicked
 
 node:selected
 {
-    shadow-mode: plain;
+    shadow-mode: gradient-radial;
     shadow-width: 3px;
     shadow-color: #FC0; 
     shadow-offset: 0px;
