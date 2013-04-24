@@ -8,6 +8,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
 import org.graphstream.ui.swingViewer.ViewerPipe;
+import webclient.MovieItem;
 
 /**
  *
@@ -21,7 +22,8 @@ public class SuggestorUi implements ViewerListener
      */
     
     protected boolean loop = true;
-    protected Graph graph = null;
+    protected boolean highlighted = false;
+    protected ItemGraph<MovieItem> graph = null;
     
     public static void main(String[] args) 
     {
@@ -32,7 +34,6 @@ public class SuggestorUi implements ViewerListener
     {
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         ItemVizModel model = new ItemVizModel();
-        model.buildGraph();
         graph = model.getGraph();
         Viewer viewer = graph.display();
         ViewerPipe fromViewer = viewer.newViewerPipe();
@@ -51,13 +52,22 @@ public class SuggestorUi implements ViewerListener
     }
 
     @Override
-    public void buttonPushed(String string) 
+    public void buttonPushed(String nodeId) 
     {
-        System.out.println("clicked");
-        graph.getNode(string).addAttribute("ui.style", "shadow-mode: gradient-radial;\n" +
-"    shadow-width: 3px;\n" +
-"    shadow-color: #FC0; \n" +
-"    shadow-offset: 0px;");
+        if(highlighted)
+        {
+            graph.restore(graph);
+        }
+        else
+        {
+            graph.highlight(graph, Highlightable.DEFAULT_HIGHLIGHTED);
+        }
+        highlighted = !highlighted;
+//        System.out.println("clicked");
+//        graph.getNode(string).addAttribute("ui.style", "shadow-mode: gradient-radial;\n" +
+//"    shadow-width: 3px;\n" +
+//"    shadow-color: #FC0; \n" +
+//"    shadow-offset: 0px;");
     }
 
     @Override

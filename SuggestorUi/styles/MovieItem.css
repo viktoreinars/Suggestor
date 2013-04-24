@@ -1,7 +1,7 @@
 /* 
     Document   : MovieItem
     Created on : Apr 21, 2013, 1:12:04 PM
-    Author     : El Zede @ CSDL
+    Author     : Gabriel Dzodom @ CSDL
     Description:
         Purpose of the stylesheet follows.
 */
@@ -25,18 +25,35 @@ node
     shape : box;
 }
 
-node:clicked
+
+node.nodeBase
 {
-    shadow-mode: gradient-radial;
-    shadow-width: 3px;
-    shadow-color: #FC0; 
-    shadow-offset: 0px;
+    fill-mode: image-scaled-ratio-max;
+    size: 70px, 95px;
+    stroke-mode: plain;
+    stroke-color: grey;
+    shape : box;
 }
 
-node:selected
+edge.edgeBase
+{
+    size: 4px; 
+    fill-color: #444;
+}
+
+node.default_highlighted
 {
     shadow-mode: gradient-radial;
-    shadow-width: 3px;
+    shadow-width: 4px;
+    shadow-color: #FC0; 
+    shadow-offset: 0px;
+    shape : rounded-box;
+}
+
+edge.default_highlighted
+{
+    shadow-mode: gradient-radial;
+    shadow-width: 4px;
     shadow-color: #FC0; 
     shadow-offset: 0px;
 }

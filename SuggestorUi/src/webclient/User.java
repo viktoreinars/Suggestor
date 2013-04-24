@@ -4,9 +4,7 @@
  */
 package webclient;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
@@ -14,7 +12,6 @@ import suggestorui.Configuration;
 import suggestorui.Displayable;
 import webclient.messaging.GetExtendedMovieRecommendationsMessage;
 import webclient.messaging.GetMovieRecommendationsMessage;
-import webclient.messaging.GetRecommendationMessage;
 import webclient.messaging.SuggestorClient;
 import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
 import webclient.messaging.SuggestorClient.SuggestorUserResponse;
@@ -30,6 +27,7 @@ import webclient.messaging.UserMessage;
 public class User extends Item implements Displayable
 {
     private static User current = null;
+    private Map recommendations = null;
     
     @Element(name="Id")
     private String itemId;
@@ -70,24 +68,31 @@ public class User extends Item implements Displayable
         return 1;
     }
     
+    
+    //to avoid hitting the webservice several times, I will lazyload
     public <T extends Item> Map<String, T> getRecommendations()
     {
-        System.out.println("Getting the Recommendations...");
-        int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
-        int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
-        GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(nFirstUsers, k);
-        SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
-        if(response.hasError())
+        if(recommendations == null)
         {
-            System.out.println(response.getErrorMessage());
-            return new HashMap<>();
+            System.out.println("Getting the Recommendations...");
+            int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
+            int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
+            GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(nFirstUsers, k);
+            SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
+            if(response.hasError())
+            {
+                System.out.println(response.getErrorMessage());
+                //return new HashMap<>();
+                recommendations = new HashMap<>();
+            }
+            else
+            {
+                Map<String, T> items = response.getItems();
+                System.out.println(String.format("Fetched %d items...", items.size()));
+                recommendations = items;
+            }
         }
-        else
-        {
-            Map<String, T> items = response.getItems();
-            System.out.println(String.format("Fetched %d items...", items.size()));
-            return items;
-        }
+        return (Map<String, T>)recommendations;
     }
     
     public <T extends Item> Map<String, T> getXRecommendations(String movieId)
@@ -161,7 +166,7 @@ public class User extends Item implements Displayable
     @Override
     public String getIconPath() 
     {
-        return "user_icon.png";
+        return "images/user_icon.png";
     }
 
     /**

@@ -6,11 +6,8 @@ package webclient;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
-import org.simpleframework.xml.ElementMap;
 import org.simpleframework.xml.Root;
 import suggestorui.Displayable;
 import suggestorui.Styleable;
