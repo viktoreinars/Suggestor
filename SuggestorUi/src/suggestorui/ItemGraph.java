@@ -4,12 +4,15 @@
  */
 package suggestorui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.graphstream.graph.EdgeFactory;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.NodeFactory;
 import org.graphstream.graph.implementations.SingleGraph;
+import webclient.AttributeCollection;
 import webclient.Item;
 import webclient.User;
 
@@ -23,7 +26,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
     
     private ItemNode<T> selectedNode;
     
-    public ItemGraph()
+    public ItemGraph(final Map<String, T> recommendations)
     {
         super("Suggestor - Recommendations");
         
@@ -31,7 +34,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
             @Override
             public ItemNode<T> newInstance(String id, Graph graph) 
             {
-                T item = (T) User.getCurrent().getRecommendations().get(id);
+                T item = recommendations.get(id);
                 return new ItemNode<>((ItemGraph<T>)graph, item);
             }
         });
@@ -49,34 +52,109 @@ public class ItemGraph<T extends Item> extends SingleGraph
     
     public boolean buildFromItems()
     {
-        Map<String, T> recommendedItems = User.getCurrent().getRecommendations();
-        if(recommendedItems.isEmpty())
+        if(AttributeCollection.isEmpty())
         {
             return false;
         }
-        T center = (T)recommendedItems.values().toArray(new Item[0])[0];
-        for(T sibling : recommendedItems.values())
+        for(String attKey : AttributeCollection.getAttributeKeys())
         {
-            //temporary code right here --- real one coming soon
-            if(!sibling.getItemId().equals(center.getItemId()))
+            System.out.print(attKey + " ---> ");
+            for(String attValue : AttributeCollection.getAttributeValues(attKey))
             {
-                this.addEdge(center, sibling);
+                System.out.print(attValue + " ");
+                Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
+                if(items.length == 1)
+                {
+                    this.addNodeItem((T)items[0]);
+                    break;
+                }
+                else
+                {
+                    for(int i = 0; i < items.length - 1; i++)
+                    {
+                        T source = (T)items[i];
+                        T target = (T)items[i + 1];
+                        this.addEdge(source, target);
+                    }
+                }
             }
-        }
-        if(recommendedItems.size() == 1)
-        {
-            this.addNode(center);
+            System.out.println();
         }
         this.updateNodeStyles();
         return true;
     }
     
+    public void highlight(String attKey, String attValue, String highlightClass)
+    {
+        List<ItemEdge> edges = this.findEdges(attKey, attValue);
+        if(edges.isEmpty())
+        {
+            for(ItemNode node : this.findNodes(attKey, attValue))
+            {
+                ((Highlightable)node).highlight(highlightClass);
+            }
+        }
+        else
+        {
+            for(Highlightable edge : edges)
+            {
+                edge.highlight(highlightClass);
+            }
+        }
+    }
+    
+    public void restore(String attKey, String attValue)
+    {
+        List<ItemEdge> edges = this.findEdges(attKey, attValue);
+        if(edges.isEmpty())
+        {
+            for(ItemNode node : this.findNodes(attKey, attValue))
+            {
+                ((Highlightable)node).restore();
+            }
+        }
+        for(Highlightable edge : edges)
+        {
+            edge.restore();
+        }
+    }
+    
+    private List<ItemNode> findNodes(String attKey, String attValue)
+    {
+        List<ItemNode> nodes = new ArrayList<>();
+        Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
+        for(int i = 0; i < items.length; i++)
+        {
+            nodes.add(this.getNodeItem((T)items[i]));
+        }
+        return nodes;
+    }
+    
+    private List<ItemEdge> findEdges(String attKey, String attValue)
+    {
+        List<ItemEdge> edges = new ArrayList<>();
+        Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
+        if(items.length > 1)
+        {
+            for(int i = 0; i < items.length - 1; i++)
+            {
+                String aNodeId = items[i].getItemId();
+                String bNodeId = items[i + 1].getItemId();
+                String edgeId = aNodeId + "-" + bNodeId;
+                ItemEdge edge = this.getEdge(edgeId);
+                if(edge == null)
+                {
+                    edgeId = bNodeId + "-" + aNodeId;
+                    edge = this.getEdge(edgeId);
+                }
+                edges.add(edge);
+            }
+        }
+        return edges;
+    }
+    
     public void highlight(ItemGraph<T> subGraph, String highlightClass)
     {
-        for(ItemNode<T> node : subGraph.getEachNodeItem())
-        {
-            ((Highlightable)this.getNodeItem(node)).highlight(highlightClass);
-        }
         for(ItemEdge<T> edge : subGraph.getEachEdgeItem())
         {
             ((Highlightable)this.getEdgeItem(edge)).highlight(highlightClass);
@@ -85,10 +163,6 @@ public class ItemGraph<T extends Item> extends SingleGraph
     
     public void restore(ItemGraph<T> subGraph)
     {
-        for(ItemNode<T> node : subGraph.getEachNodeItem())
-        {
-            ((Highlightable)this.getNodeItem(node)).restore();
-        }
         for(ItemEdge<T> edge : subGraph.getEachEdgeItem())
         {
             ((Highlightable)this.getEdgeItem(edge)).restore();
@@ -128,7 +202,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
         }
     }    
     
-    public ItemNode<T> addNode(T item)
+    public ItemNode<T> addNodeItem(T item)
     {
         if(item == null)
         {
@@ -145,12 +219,12 @@ public class ItemGraph<T extends Item> extends SingleGraph
         ItemNode<T> sourceNode = this.getNodeItem(source); 
         if(sourceNode == null)
         {
-            sourceNode = this.addNode(source);
+            sourceNode = this.addNodeItem(source);
         }        
         ItemNode<T> targetNode = this.getNodeItem(target);
         if(targetNode == null)
         {
-            targetNode = this.addNode(target);
+            targetNode = this.addNodeItem(target);
         }
         ItemEdge<T> edge = new ItemEdge<>(sourceNode, targetNode);
         this.addEdge(edge.getId(), sourceNode, targetNode);

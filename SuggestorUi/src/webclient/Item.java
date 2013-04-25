@@ -72,17 +72,23 @@ public abstract class Item
             return response.getItems();
         }
     }
+    
+    public boolean onCreated() { return true; }
         
     public static <T extends Item> T createFromXml(Class<T> classname, String xml)
     {
         Serializer serializer = new Persister();
         try 
         {
-            return serializer.read(classname, xml);
+            T returnValue = serializer.read(classname, xml);
+            if(returnValue.onCreated())
+            {
+                return returnValue;
+            }
         } catch (Exception ex) {
             Logger.getLogger(Item.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
         }
+        return null;
     }
     
 }

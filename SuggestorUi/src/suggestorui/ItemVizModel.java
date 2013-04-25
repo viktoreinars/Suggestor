@@ -4,7 +4,9 @@
  */
 package suggestorui;
 
+import java.util.Map;
 import webclient.Item;
+import webclient.User;
 
 /**
  *
@@ -17,7 +19,8 @@ public class ItemVizModel<T extends Item>
         
     public ItemVizModel()
     {
-        graph = new ItemGraph<>();
+        Map<String, T> recommendations = User.getCurrent().getRecommendations();
+        graph = new ItemGraph<>(recommendations);
         String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));
         graph.addAttribute("ui.stylesheet", graphInitStyle);
         graph.addAttribute("ui.antialias");

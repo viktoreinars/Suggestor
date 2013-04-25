@@ -28,6 +28,7 @@ public class User extends Item implements Displayable
 {
     private static User current = null;
     private Map recommendations = null;
+    private Map<String, Map<String, String>> profileMatrix = null;
     
     @Element(name="Id")
     private String itemId;
@@ -51,6 +52,8 @@ public class User extends Item implements Displayable
         {
             System.out.println("Selecting the User...");
             current = User.selectUser();
+            System.out.println(current.getDescription());
+            System.out.println(current.getIconPath());
             System.out.println("Selected User: " + current.getItemId());
         }
         return current;
@@ -72,7 +75,8 @@ public class User extends Item implements Displayable
     //to avoid hitting the webservice several times, I will lazyload
     public <T extends Item> Map<String, T> getRecommendations()
     {
-        if(recommendations == null)
+        AttributeCollection.clear();
+        //if(recommendations == null)
         {
             System.out.println("Getting the Recommendations...");
             int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
@@ -97,6 +101,7 @@ public class User extends Item implements Displayable
     
     public <T extends Item> Map<String, T> getXRecommendations(String movieId)
     {
+        AttributeCollection.clear();
         System.out.println("Getting the Recommendations...");
         int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
         int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
@@ -160,13 +165,36 @@ public class User extends Item implements Displayable
     @Override
     public String getDescription() 
     {
-        return String.format("Age: %s\nOccupation: %s\nZipCode: %s", this.getAge(), this.getOccupation(), this.getZipcode());
+        return String.format("Age: %s\nGender: %s\nOccupation: %s\nZipCode: %s", this.getAge(), this.getGender(), this.getOccupation(), this.getZipcode());
     }
 
     @Override
     public String getIconPath() 
     {
-        return "images/user_icon.png";
+        if(this.profileMatrix == null)
+        {
+            this.profileMatrix = new HashMap<>();
+            this.profileMatrix.put("old", new HashMap<String, String>());
+            this.profileMatrix.get("old").put("m", "old-guy.png");
+            this.profileMatrix.get("old").put("f", "old-woman.png");
+            this.profileMatrix.put("young", new HashMap<String, String>());
+            this.profileMatrix.get("young").put("m", "young-guy.png");
+            this.profileMatrix.get("young").put("f", "young-woman.png");
+        }
+        
+        String ageKey = "young";
+        String genderKey = "m";
+        
+        if(this.age >= 40)
+        {
+            ageKey = "old";
+        }
+        if(this.gender.toLowerCase().charAt(0) == 'f')
+        {
+            genderKey = "f";
+        }
+        
+        return "images/" + this.profileMatrix.get(ageKey).get(genderKey);
     }
 
     /**
@@ -196,4 +224,5 @@ public class User extends Item implements Displayable
     public String getZipcode() {
         return zipcode;
     }
+    
 }

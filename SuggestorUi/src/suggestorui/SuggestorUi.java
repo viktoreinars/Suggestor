@@ -4,6 +4,7 @@
  */
 package suggestorui;
 
+import java.util.ResourceBundle;
 import org.graphstream.graph.Graph;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
@@ -54,20 +55,18 @@ public class SuggestorUi implements ViewerListener
     @Override
     public void buttonPushed(String nodeId) 
     {
+        ResourceBundle bundle = ResourceBundle.getBundle("suggestorui.suggestorui");
+        String attkey = bundle.getString("attkey");
+        String attvalue = bundle.getString("attvalue");
         if(highlighted)
         {
-            graph.restore(graph);
+            graph.restore(attkey, attvalue);
         }
         else
         {
-            graph.highlight(graph, Highlightable.DEFAULT_HIGHLIGHTED);
+            graph.highlight(attkey, attvalue, Highlightable.DEFAULT_HIGHLIGHTED);
         }
         highlighted = !highlighted;
-//        System.out.println("clicked");
-//        graph.getNode(string).addAttribute("ui.style", "shadow-mode: gradient-radial;\n" +
-//"    shadow-width: 3px;\n" +
-//"    shadow-color: #FC0; \n" +
-//"    shadow-offset: 0px;");
     }
 
     @Override

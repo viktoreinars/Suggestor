@@ -32,12 +32,16 @@ public class ItemEdge<T extends Item> extends AbstractEdge implements Highlighta
     @Override
     public void highlight(String highlightClass) 
     {
+        ((Highlightable)this.getSourceNode()).highlight(highlightClass);
+        ((Highlightable)this.getTargetNode()).highlight(highlightClass);
         this.addAttribute("ui.class", highlightClass);
     }
 
     @Override
     public void restore() 
     {
+        ((Highlightable)this.getSourceNode()).restore();
+        ((Highlightable)this.getTargetNode()).restore();
         this.removeAttribute("ui.class");
         this.addAttribute("ui.class", Configuration.getValue("edgeBaseClass"));
     }

@@ -95,5 +95,14 @@ public class MovieItem extends Item implements Displayable, Styleable
     {
         return "";
     }
-    
+
+    @Override
+    public boolean onCreated() 
+    {
+        for(MovieAttribute attribute : attributes)
+        {
+            AttributeCollection.add(attribute.getKey(), attribute.getValue(), this);
+        }
+        return true;
+    }
 }
