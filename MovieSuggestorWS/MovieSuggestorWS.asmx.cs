@@ -22,36 +22,63 @@ namespace MovieSuggestorWS
         [WebMethod]
         public XmlDocument GetUser(int id)
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            User user = suggestorInstance.GetUser(id);
-            // Every user has 20+ ratings associated with himself
-            
-            return MovieSerializer.ObjectToXml(user, typeof(User));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                User user = suggestorInstance.GetUser(id);
+                // Every user has 20+ ratings associated with himself            
+                return MovieSerializer.ObjectToXml(user, typeof(User));
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         [WebMethod]
         public XmlDocument SelectUser(int id)
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            suggestorInstance.SelectUser(id);
-            return GetUser(id);
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                suggestorInstance.SelectUser(id);
+                return GetUser(id);
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         [WebMethod]
         public XmlDocument SelectRandomUser()
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            User randomUser = suggestorInstance.SelectRandomUser();
-            return MovieSerializer.ObjectToXml(randomUser, typeof(User));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                User randomUser = suggestorInstance.SelectRandomUser();
+                return MovieSerializer.ObjectToXml(randomUser, typeof(User));
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         [WebMethod]
         public XmlDocument GetRecommendedMovies(int userN, int n)
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
-            List<Movie> movies = suggestorInstance.RecommendMovies(userN, n);
-            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
+                List<Movie> movies = suggestorInstance.RecommendMovies(userN, n);
+                return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         /// <summary>
@@ -60,34 +87,53 @@ namespace MovieSuggestorWS
         /// used from the list. The movies with the top aggregate score of these top secondary users are then returned.
         /// </summary>
         /// <param name="movieId"></param>
-        /// <param name="userN">How many users we want to consider that are similar to the current user</param>
-        /// <param name="secondaryUserN">How many users we want to consider that are similar to our similar users (first ones)</param>
-        /// <param name="topSecondaryUsersN">The number of the top secondary users to consider for final movie recommendation</param>
+        /// <param name="userN">How many users we want to consider that are similar to the current user</param>        
         /// <param name="n">How many movie recommendations to return</param>
         /// <returns></returns>
         [WebMethod]
-        public XmlDocument GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n, string filterKey, string filterValue)
+        public XmlDocument GetExtendedMovieRecommendations(int movieId, int userN, int n, string filterKey, string filterValue)
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
-            List<Movie> movies = suggestorInstance.GetExtendedMovieRecommendations(movieId, userN, secondaryUserN, topSecondaryUsersN, n, filterKey, filterValue);
-            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
+                List<Movie> movies = suggestorInstance.GetExtendedMovieRecommendations(movieId, userN, n, filterKey, filterValue);
+                return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            }
+            catch(Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         [WebMethod]
         public XmlDocument GetMovies()
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            List<Movie> movies = suggestorInstance.GetMovies();
-            return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                List<Movie> movies = suggestorInstance.GetMovies();
+                return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         [WebMethod]
         public XmlDocument GetMovie(int id)
         {
-            MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
-            Movie movies = suggestorInstance.GetMovie(id);
-            return MovieSerializer.ObjectToXml(movies, typeof(Movie));
+            try
+            {
+                MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
+                Movie movies = suggestorInstance.GetMovie(id);
+                return MovieSerializer.ObjectToXml(movies, typeof(Movie));
+            }
+            catch (Exception ex)
+            {
+                return GetError(ex.Message);
+            }
         }
 
         #region Helper Functions

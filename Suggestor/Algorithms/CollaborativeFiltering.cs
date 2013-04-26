@@ -93,10 +93,12 @@ namespace Suggestor.Algorithms
             topValues.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); });
             topValues.Reverse();
             Dictionary<SuggestorUser, double> returnUsers = new Dictionary<SuggestorUser, double>();
-            for (int i = 0; i < n; i++)
+            topValues.Take(n);
+            foreach (KeyValuePair<SuggestorUser, double> pair in topValues)
             {
-                if (topValues[i].Value != 0)
-                    returnUsers.Add(topValues[i].Key, topValues[i].Value);
+                //if (topValues[i].Value != 0)
+                    //returnUsers.Add(topValues[i].Key, topValues[i].Value);
+                returnUsers.Add(pair.Key, pair.Value);
             }
             return returnUsers;
         }        
