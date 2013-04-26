@@ -51,7 +51,7 @@ public class User extends Item implements Displayable
         if(current == null)
         {
             System.out.println("Selecting the User...");
-            current = User.selectUser();
+            current = User.selectRandomUser();
             System.out.println(current.getDescription());
             System.out.println(current.getIconPath());
             System.out.println("Selected User: " + current.getItemId());

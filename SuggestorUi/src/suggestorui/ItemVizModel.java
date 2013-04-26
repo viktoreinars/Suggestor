@@ -28,7 +28,7 @@ public class ItemVizModel<T extends Item>
         graph.setAutoCreate(true);
         graph.setStrict(false);
         
-        graph.buildFromItems();
+        graph.buildFromItems("Gender");
     }
         
     public ItemGraph<T> getGraph()

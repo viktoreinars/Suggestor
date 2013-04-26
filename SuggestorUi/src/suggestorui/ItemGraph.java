@@ -50,6 +50,41 @@ public class ItemGraph<T extends Item> extends SingleGraph
         });
     }
     
+    
+    public boolean buildFromItems(String attKey)
+    {
+        if(AttributeCollection.isEmpty())
+        {
+            return false;
+        }
+        //for(String attKey : AttributeCollection.getAttributeKeys())
+        {
+            System.out.print(attKey + " ---> ");
+            for(String attValue : AttributeCollection.getAttributeValues(attKey))
+            {
+                System.out.print(attValue + " ");
+                Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
+                if(items.length == 1)
+                {
+                    this.addNodeItem((T)items[0]);
+                    //break;
+                }
+                else
+                {
+                    for(int i = 0; i < items.length - 1; i++)
+                    {
+                        T source = (T)items[i];
+                        T target = (T)items[i + 1];
+                        this.addEdge(source, target);
+                    }
+                }
+            }
+            System.out.println();
+        }
+        this.updateNodeStyles();
+        return true;
+    }
+    
     public boolean buildFromItems()
     {
         if(AttributeCollection.isEmpty())
@@ -244,6 +279,6 @@ public class ItemGraph<T extends Item> extends SingleGraph
             ((Highlightable)this.selectedNode).restore();
         }
         this.selectedNode = (ItemNode<T>)this.getNode(id);
-        ((Highlightable)this.selectedNode).highlight(Highlightable.DEFAULT_HIGHLIGHTED);
+        ((Highlightable)this.selectedNode).highlight(Highlightable.NODE_SELECTED_HIGHLIGHT);
     }
 }

@@ -119,16 +119,20 @@ namespace MovieSuggestor
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Gender");
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Zipcode");
 
+                Dictionary<string, int> ageGroups = new Dictionary<string,int>();
+                Dictionary<string, int> occupationGroups = new Dictionary<string,int>();
+                Dictionary<string, int> genderGroups = new Dictionary<string,int>();
+
                 foreach (User similarUser in recommendedUsers.Keys)
                 {
                     var ratingList = similarUser.Rating.Where(rating => rating.MovieId == recommendedMovie.Id);
                     if (ratingList.Count() == 0) continue; // User did not rate this movie
                     
-                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("AgeGroup", similarUser.AgeGroup));
-                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", similarUser.Occupation));
-                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", similarUser.Gender));
-                    recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Zipcode", similarUser.Zipcode));
-                    /* Dont need to count
+                    //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("AgeGroup", similarUser.AgeGroup));
+                    //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", similarUser.Occupation));
+                    //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", similarUser.Gender));
+                    //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Zipcode", similarUser.Zipcode));
+                    /* Dont need to count */
                     // Age groups                    
                     if (!(ageGroups.Keys.Contains(similarUser.AgeGroup))) ageGroups.Add(similarUser.AgeGroup, 1);
                     else ageGroups[similarUser.AgeGroup] += 1;
@@ -139,14 +143,36 @@ namespace MovieSuggestor
 
                     if (!(genderGroups.Keys.Contains(similarUser.Gender))) genderGroups.Add(similarUser.Gender, 1);
                     else genderGroups[similarUser.Gender] += 1;
-                    */
+                    
                 }
 
-                /* Dont need counting of groups - handled on server side
-                foreach (string ageKey in ageGroups.Keys)
+                /* Dont need counting of groups - handled on server side */
+                List<System.Collections.Generic.KeyValuePair<string, int>> topAgeGroups = ageGroups.ToList();
+                topAgeGroups.Sort((firstPair, nextPair) =>
                 {
-                    recommendedMovie.Attributes.Add(new KeyValuePair<string,string>("AgeGroup", ageGroups[ageKey]
-                }*/
+                    return firstPair.Value.CompareTo(nextPair.Value);
+                }
+                );
+                topAgeGroups.Reverse();
+                recommendedMovie.Attributes.Add(new KeyValuePair<string,string>("AgeGroup", topAgeGroups[0].Key));
+
+                List<System.Collections.Generic.KeyValuePair<string, int>> topOccupationGroups = occupationGroups.ToList();
+                topOccupationGroups.Sort((firstPair, nextPair) =>
+                {
+                    return firstPair.Value.CompareTo(nextPair.Value);
+                }
+                );
+                topOccupationGroups.Reverse();
+                recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", topOccupationGroups[0].Key));
+
+                List<System.Collections.Generic.KeyValuePair<string, int>> topGenderGroups = genderGroups.ToList();
+                topGenderGroups.Sort((firstPair, nextPair) =>
+                {
+                    return firstPair.Value.CompareTo(nextPair.Value);
+                }
+                );
+                topGenderGroups.Reverse();
+                recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", topGenderGroups[0].Key));
             }
 
             return recommendedMovies;
