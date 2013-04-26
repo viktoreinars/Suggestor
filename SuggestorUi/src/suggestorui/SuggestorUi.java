@@ -4,8 +4,6 @@
  */
 package suggestorui;
 
-import java.util.ResourceBundle;
-import org.graphstream.graph.Graph;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
 import org.graphstream.ui.swingViewer.ViewerPipe;
@@ -26,6 +24,20 @@ public class SuggestorUi implements ViewerListener
     protected boolean highlighted = false;
     protected ItemGraph<MovieItem> graph = null;
     
+    private String[] gender = { "M", "F" };
+    private String[] colors = 
+    {
+        Highlightable.BLUE_HIGHLIGHT,
+        Highlightable.RED_HIGHLIGHT,
+        Highlightable.YELLOW_HIGHLIGHT,
+        Highlightable.GREEN_HIGHLIGHT,
+        Highlightable.ORANGE_HIGHLIGHT,
+        Highlightable.VIOLET_HIGHLIGHT,
+        Highlightable.PINK_HIGHLIGHT
+    };
+    private int aIter = 0;
+    private int cIter = 0;
+    
     public static void main(String[] args) 
     {
         SuggestorUi suggestorUi = new SuggestorUi();
@@ -37,13 +49,15 @@ public class SuggestorUi implements ViewerListener
         ItemVizModel model = new ItemVizModel();
         graph = model.getGraph();
         Viewer viewer = graph.display();
+        //viewer.disableAutoLayout();
         ViewerPipe fromViewer = viewer.newViewerPipe();
         fromViewer.addViewerListener(this);
         fromViewer.addSink(graph);        
 
         while(loop) {
             fromViewer.pump();
-        }        
+        }
+        
     }
 
     @Override
@@ -55,18 +69,21 @@ public class SuggestorUi implements ViewerListener
     @Override
     public void buttonPushed(String nodeId) 
     {
-        ResourceBundle bundle = ResourceBundle.getBundle("suggestorui.suggestorui");
-        String attkey = bundle.getString("attkey");
-        String attvalue = bundle.getString("attvalue");
+        String attkey = "Gender";
+        String attvalue = gender[aIter];
+        String color = colors[cIter];
         if(highlighted)
         {
             graph.restore(attkey, attvalue);
         }
         else
         {
-            graph.highlight(attkey, attvalue, Highlightable.DEFAULT_HIGHLIGHTED);
+            graph.highlight(attkey, attvalue, color);
         }
-        highlighted = !highlighted;
+        //highlighted = !highlighted;
+        aIter = aIter >= gender.length - 1 ? 0 : aIter + 1;
+        cIter = cIter >= colors.length - 1 ? 0 : cIter + 1;
+        System.out.println(attvalue);
     }
 
     @Override
