@@ -66,11 +66,11 @@ namespace MovieSuggestorWS
         /// <param name="n">How many movie recommendations to return</param>
         /// <returns></returns>
         [WebMethod]
-        public XmlDocument GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n)
+        public XmlDocument GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n, string filterKey, string filterValue)
         {
             MovieSuggestor.MovieSuggestor suggestorInstance = MovieSuggestor.MovieSuggestor.GetInstance();
             if (suggestorInstance.GetCurrentUser() == null) return GetError("No user selected");
-            List<Movie> movies = suggestorInstance.GetExtendedMovieRecommendations(movieId, userN, secondaryUserN, topSecondaryUsersN, n);
+            List<Movie> movies = suggestorInstance.GetExtendedMovieRecommendations(movieId, userN, secondaryUserN, topSecondaryUsersN, n, filterKey, filterValue);
             return MovieSerializer.ObjectToXml(movies, typeof(List<Movie>));
         }
 

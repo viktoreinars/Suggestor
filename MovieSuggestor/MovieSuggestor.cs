@@ -13,6 +13,9 @@ namespace MovieSuggestor
         
         private static MovieSuggestor singleton;
 
+        // Hack
+        private Dictionary<string, SuggestorUser> users = null;
+
         private MovieSuggestor() { }
 
         public static MovieSuggestor GetInstance()
@@ -32,10 +35,18 @@ namespace MovieSuggestor
             MovieExtracter.GetInstance().Initialize();
             Dictionary<string, SuggestorItem> movies = MovieExtracter.GetInstance().GetMovies().ToDictionary(x => x.Id.ToString(), x => (SuggestorItem)x);
             //Dictionary<string, SuggestorCollection> ratings = .ToDictionary(x => (x.Key), x => (SuggestorItem)x.Value);
-            Dictionary<string, SuggestorUser> users = MovieExtracter.GetInstance().GetUsers().ToDictionary(x => (x.Id.ToString()), x => (SuggestorUser)x);
+            users = MovieExtracter.GetInstance().GetUsers().ToDictionary(x => (x.Id.ToString()), x => (SuggestorUser)x);
 
-            suggestor = new SuggestorConnector(null, movies, users, new Suggestor.Algorithms.CollaborativeFiltering(10));
+            suggestor = new SuggestorConnector(null, movies, users, new Suggestor.Algorithms.CollaborativeFiltering(10));            
             suggestor.Initialize();
+        }
+
+        public Dictionary<string, SuggestorUser> AllUsers
+        {
+            get
+            {
+                return users;
+            }
         }
 
         public void SelectUser(int id)
@@ -78,7 +89,7 @@ namespace MovieSuggestor
         public List<Movie> RecommendMovies(int userN, int n)
         {
             // Get similar users
-            Dictionary<SuggestorUser, double> recommendedUsers = suggestor.SuggestUsers(currentUser, userN);
+            Dictionary<SuggestorUser, double> recommendedUsers = suggestor.SuggestUsers(users.Values.ToList(), currentUser, userN);
 
             // Aggregate movie score
             Dictionary<Movie, double> topMovies = new Dictionary<Movie, double>();
@@ -141,10 +152,10 @@ namespace MovieSuggestor
             return recommendedMovies;
         }
 
-        public List<Movie> GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n)
+        public List<Movie> GetExtendedMovieRecommendations(int movieId, int userN, int secondaryUserN, int topSecondaryUsersN, int n, string filterKey, string filterValue)
         {
             // Find users that rated movie highest
-            Dictionary<SuggestorUser, double> recommendedUsers = suggestor.SuggestUsers(currentUser, userN);
+            Dictionary<SuggestorUser, double> recommendedUsers = suggestor.SuggestUsers(users.Values.ToList(), currentUser, userN);
 
             // Contains users that rated the movie
             // TODO: These might be slow
@@ -152,11 +163,27 @@ namespace MovieSuggestor
             if (topUsersThatRatedMovie.Count == 0) return null; // No users found that rated the movie highly...shouldnt happen
             List<User> topSortedUsers = topUsersThatRatedMovie.OrderBy(user => user.Ratings.Where(rating => rating.MovieId == movieId).First().Rating1).ToList();
 
+            List<string> userAttributeFilterList = new List<string>{ "agegroup", "occupation", "gender", "zipcode" };
+
             // Find similar users to those
             Dictionary<SuggestorUser, double> allRecommendedSecondaryUsers = new Dictionary<SuggestorUser, double>();
             foreach (User similarUser in recommendedUsers.Keys)
             {
-                Dictionary<SuggestorUser, double> recommendedSecondaryUsers = suggestor.SuggestUsers(similarUser, secondaryUserN);
+                /*
+                if (userAttributeFilterList.Contains(filterKey.ToLower()))
+                {
+                    switch (filterKey.ToLower())
+                    {
+                        case "agegroup":
+                            recommendedSecondaryUsers = recommendedSecondaryUsers.Where(user => ((User)user.Key).AgeGroup == filterValue).ToDictionary(pair => pair.Key, pair => pair.Value);
+                            break;
+                        case "occupation":
+                            recommendedSecondaryUsers = recommendedSecondaryUsers.Where(user => ((User)user.Key).Occupation == filterValue).ToDictionary(pair => pair.Key, pair => pair.Value);
+                            break;
+                    }
+                }*/
+
+                Dictionary<SuggestorUser, double> recommendedSecondaryUsers = suggestor.SuggestUsers(AllUsers.Values.ToList(), similarUser, secondaryUserN);                
                 foreach (User secondaryUser in recommendedSecondaryUsers.Keys)
                 {
                     if (secondaryUser == currentUser) continue; // Dont want to consider ourselves
@@ -166,7 +193,7 @@ namespace MovieSuggestor
                         allRecommendedSecondaryUsers[secondaryUser] += recommendedSecondaryUsers[secondaryUser];
                 }
             }
-
+            
             Dictionary<SuggestorUser, double> sortedSecondaryUsers = (from entry in allRecommendedSecondaryUsers orderby entry.Value descending select entry)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
             List<SuggestorUser> topSecondaryUsers = sortedSecondaryUsers.Keys.Take(topSecondaryUsersN).ToList();
@@ -188,6 +215,7 @@ namespace MovieSuggestor
             Dictionary<Movie, double> sortedDict = (from entry in topMovies orderby entry.Value descending select entry)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
+            // Filter by attribute
             List<Movie> recommendedMovies = sortedDict.Keys.Take(n).ToList();
 
             // Find groups used for recommendations

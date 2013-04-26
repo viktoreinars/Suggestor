@@ -85,7 +85,7 @@ namespace Suggestor.Algorithms
             // TODO: Cache this. Per instance?
             foreach (SuggestorUser user in compareUsers)
             {
-                // Find cosine similarity between users lines and other users lines
+                // Find cosine similarity between users lines and other users lines                
                 topUsers.Add(user, SuggestorCollectionFunctions.CosineScore(user, compareUser));
             }
 

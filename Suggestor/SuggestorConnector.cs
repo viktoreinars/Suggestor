@@ -24,10 +24,14 @@ namespace Suggestor
             //Initialize();
         }
 
+        public void SetUsers(Dictionary<string, SuggestorUser> users)
+        {
+            this.users = users;
+        }
+
         public void Initialize()
         {
             recommenderEngine.PreCalculation(collections, items);
-            //CalculateInvoiceWeights(invoices, items);
         }
 
         public Dictionary<string, double> SuggestItems(SuggestorCollection compareCollection, int n)
@@ -40,9 +44,9 @@ namespace Suggestor
             return recommenderEngine.SuggestNCollections(collections, compareCollection, n);
         }
 
-        public Dictionary<SuggestorUser, double> SuggestUsers(SuggestorUser user, int n)
+        public Dictionary<SuggestorUser, double> SuggestUsers(List<SuggestorUser> usersToCompareTo, SuggestorUser user, int n)
         {
-            return recommenderEngine.SuggestNUsers(users.Values.ToList(), user, n);
+            return recommenderEngine.SuggestNUsers(usersToCompareTo, user, n);
         }
 
         /*
