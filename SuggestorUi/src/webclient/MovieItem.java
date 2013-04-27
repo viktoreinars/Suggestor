@@ -35,6 +35,16 @@ public class MovieItem extends Item implements Displayable, Styleable
         
     }
     
+    public static MovieItem TestMovie()
+    {
+        MovieItem item = new MovieItem();
+        item.itemid = "";
+        item.title = "";
+        item.releaseDate = "";
+        item.description = "";
+        return item;
+    }
+    
     @ElementList(name="Attributes")
     private List<MovieAttribute> attributes;
 
@@ -46,7 +56,12 @@ public class MovieItem extends Item implements Displayable, Styleable
 
     public String getYear()
     {
-        return this.releaseDate.split("-")[2];
+        String[] pieces = this.releaseDate.split("-");
+        if(pieces.length == 0)
+        {
+            return "";
+        }
+        return pieces[pieces.length - 1];
     }
     
     
@@ -83,7 +98,7 @@ public class MovieItem extends Item implements Displayable, Styleable
             return String.format(template, "default.png");
         }
     }
-
+        
     @Override
     public String getStyle() 
     {

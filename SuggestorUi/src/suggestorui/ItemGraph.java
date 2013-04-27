@@ -14,7 +14,6 @@ import org.graphstream.graph.NodeFactory;
 import org.graphstream.graph.implementations.SingleGraph;
 import webclient.AttributeCollection;
 import webclient.Item;
-import webclient.User;
 
 /**
  *
@@ -53,6 +52,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
     
     public boolean buildFromItems(String attKey)
     {
+        //this.clear();
         if(AttributeCollection.isEmpty())
         {
             return false;
@@ -182,7 +182,10 @@ public class ItemGraph<T extends Item> extends SingleGraph
                     edgeId = bNodeId + "-" + aNodeId;
                     edge = this.getEdge(edgeId);
                 }
-                edges.add(edge);
+                if(edge != null)
+                {
+                    edges.add(edge);
+                }
             }
         }
         return edges;
