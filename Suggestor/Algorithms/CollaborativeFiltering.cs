@@ -92,9 +92,8 @@ namespace Suggestor.Algorithms
             List<KeyValuePair<SuggestorUser, double>> topValues = topUsers.ToList();
             topValues.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); });
             topValues.Reverse();
-            Dictionary<SuggestorUser, double> returnUsers = new Dictionary<SuggestorUser, double>();
-            topValues.Take(n);
-            foreach (KeyValuePair<SuggestorUser, double> pair in topValues)
+            Dictionary<SuggestorUser, double> returnUsers = new Dictionary<SuggestorUser, double>();            
+            foreach (KeyValuePair<SuggestorUser, double> pair in topValues.Take(n))
             {
                 //if (topValues[i].Value != 0)
                     //returnUsers.Add(topValues[i].Key, topValues[i].Value);
@@ -102,13 +101,5 @@ namespace Suggestor.Algorithms
             }
             return returnUsers;
         }        
-
-        /*private void CalculateInvoiceWeights(Dictionary<string, SuggestorCollection> invoices, Dictionary<string, SuggestorItem> items)
-        {
-            foreach (SuggestorCollection invoice in invoices.Values)
-            {
-                SuggestorCollectionFunctions.CalculateTFIDF(invoice, invoices.Count);
-            }
-        }*/
     }
 }
