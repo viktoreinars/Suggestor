@@ -59,6 +59,10 @@ namespace MovieSuggestor
             {
                 return Rating.ToList();
             }
+            set
+            {
+                Rating = value;
+            }
         }
     }
 }
