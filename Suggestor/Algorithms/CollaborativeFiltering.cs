@@ -85,28 +85,21 @@ namespace Suggestor.Algorithms
             // TODO: Cache this. Per instance?
             foreach (SuggestorUser user in compareUsers)
             {
-                // Find cosine similarity between users lines and other users lines
+                // Find cosine similarity between users lines and other users lines                
                 topUsers.Add(user, SuggestorCollectionFunctions.CosineScore(user, compareUser));
             }
 
             List<KeyValuePair<SuggestorUser, double>> topValues = topUsers.ToList();
             topValues.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); });
             topValues.Reverse();
-            Dictionary<SuggestorUser, double> returnUsers = new Dictionary<SuggestorUser, double>();
-            for (int i = 0; i < n; i++)
+            Dictionary<SuggestorUser, double> returnUsers = new Dictionary<SuggestorUser, double>();            
+            foreach (KeyValuePair<SuggestorUser, double> pair in topValues.Take(n))
             {
-                if (topValues[i].Value != 0)
-                    returnUsers.Add(topValues[i].Key, topValues[i].Value);
+                //if (topValues[i].Value != 0)
+                    //returnUsers.Add(topValues[i].Key, topValues[i].Value);
+                returnUsers.Add(pair.Key, pair.Value);
             }
             return returnUsers;
         }        
-
-        /*private void CalculateInvoiceWeights(Dictionary<string, SuggestorCollection> invoices, Dictionary<string, SuggestorItem> items)
-        {
-            foreach (SuggestorCollection invoice in invoices.Values)
-            {
-                SuggestorCollectionFunctions.CalculateTFIDF(invoice, invoices.Count);
-            }
-        }*/
     }
 }
