@@ -27,12 +27,22 @@ public class ItemVizModel<T extends Item>
         graph.addAttribute("ui.quality");
         graph.setAutoCreate(true);
         graph.setStrict(false);
-        
-        graph.buildFromItems("Gender");
     }
         
     public ItemGraph<T> getGraph()
     {
         return this.graph;
     }
+    
+    public void updateGraph(String attKey)
+    {
+        graph.buildFromItems(attKey);
+    }
+    
+    public void selectItem(String itemId)
+    {
+        this.graph.setSelectedNode(itemId);
+    }
+    
+    
 }

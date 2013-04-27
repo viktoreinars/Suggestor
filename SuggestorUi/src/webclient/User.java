@@ -10,8 +10,10 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 import suggestorui.Configuration;
 import suggestorui.Displayable;
+import suggestorui.ServiceWorker;
 import webclient.messaging.GetExtendedMovieRecommendationsMessage;
 import webclient.messaging.GetMovieRecommendationsMessage;
+import webclient.messaging.ServiceEvent;
 import webclient.messaging.SuggestorClient;
 import webclient.messaging.SuggestorClient.SuggestorItemListResponse;
 import webclient.messaging.SuggestorClient.SuggestorUserResponse;
@@ -51,7 +53,7 @@ public class User extends Item implements Displayable
         if(current == null)
         {
             System.out.println("Selecting the User...");
-            current = User.selectRandomUser();
+            current = User.selectUser();
             System.out.println(current.getDescription());
             System.out.println(current.getIconPath());
             System.out.println("Selected User: " + current.getItemId());
@@ -82,7 +84,13 @@ public class User extends Item implements Displayable
             int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
             int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
             GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(nFirstUsers, k);
+            
+            ServiceEvent preEvent = new ServiceEvent(message, null);
+            ServiceWorker.getInstance().fireOnPreCommunicationEvents(preEvent);
             SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
+            ServiceEvent postEvent = new ServiceEvent(message, response);
+            ServiceWorker.getInstance().fireOnPostCommunicationEvents(postEvent);
+            
             if(response.hasError())
             {
                 System.out.println(response.getErrorMessage());
@@ -109,7 +117,13 @@ public class User extends Item implements Displayable
         int kTopSecondUsers = Integer.parseInt(Configuration.getValue("kTopSecondUsers"));
         
         GetExtendedMovieRecommendationsMessage message = new GetExtendedMovieRecommendationsMessage(movieId, nFirstUsers, nSecondUsers, kTopSecondUsers, k);
+        
+        ServiceEvent preEvent = new ServiceEvent(message, null);
+        ServiceWorker.getInstance().fireOnPreCommunicationEvents(preEvent);
         SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
+        ServiceEvent postEvent = new ServiceEvent(message, response);
+        ServiceWorker.getInstance().fireOnPostCommunicationEvents(postEvent);
+        
         if(response.hasError())
         {
             System.out.println(response.getErrorMessage());
@@ -166,6 +180,13 @@ public class User extends Item implements Displayable
     public String getDescription() 
     {
         return String.format("Age: %s\nGender: %s\nOccupation: %s\nZipCode: %s", this.getAge(), this.getGender(), this.getOccupation(), this.getZipcode());
+    }
+    
+    public String getHtmlDescription()
+    {
+        return String.format(
+                "<html><b>ID: </b>%s<br/><b>Age: </b>%s<br/><b>Gender</b>: %s<br/><b>Occupation: </b>%s<br/><b>ZipCode: </b>%s</html>", 
+                this.getItemId(), this.getAge(), this.getGender(), this.getOccupation(), this.getZipcode());
     }
 
     @Override

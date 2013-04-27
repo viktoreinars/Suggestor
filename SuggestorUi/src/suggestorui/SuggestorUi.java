@@ -4,9 +4,11 @@
  */
 package suggestorui;
 
-import org.graphstream.ui.swingViewer.Viewer;
+import com.alee.laf.WebLookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.graphstream.ui.swingViewer.ViewerListener;
-import org.graphstream.ui.swingViewer.ViewerPipe;
+import suggestorui.views.ItemVizView;
 import webclient.MovieItem;
 
 /**
@@ -40,24 +42,26 @@ public class SuggestorUi implements ViewerListener
     
     public static void main(String[] args) 
     {
-        SuggestorUi suggestorUi = new SuggestorUi();
+        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        try
+        {
+            UIManager.setLookAndFeel(WebLookAndFeel.class.getCanonicalName());
+            WebLookAndFeel.initializeManagers();
+            SuggestorUi suggestorUi = new SuggestorUi();
+        }
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e)
+        {
+            System.out.println(e.getMessage());
+        }
     }
     
     public SuggestorUi()
     {
-        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         ItemVizModel model = new ItemVizModel();
-        graph = model.getGraph();
-        Viewer viewer = graph.display();
-        //viewer.disableAutoLayout();
-        ViewerPipe fromViewer = viewer.newViewerPipe();
-        fromViewer.addViewerListener(this);
-        fromViewer.addSink(graph);        
-
-        while(loop) {
-            fromViewer.pump();
-        }
-        
+        ItemVizView view = new ItemVizView(model);
+        view.pack();
+        view.setVisible(true);
+        view.startPumping();
     }
 
     @Override

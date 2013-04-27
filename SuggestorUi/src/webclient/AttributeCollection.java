@@ -80,5 +80,17 @@ public class AttributeCollection
     {
         collection.clear();
     }
-
+    
+    public static void printToScreen()
+    {
+        for(String attKey : AttributeCollection.getAttributeKeys())
+        {
+            System.out.print(attKey + " ---> ");
+            for(String attValue : AttributeCollection.getAttributeValues(attKey))
+            {
+                System.out.print(attValue + " ");
+            }
+           System.out.println();
+        }
+    }
 }
