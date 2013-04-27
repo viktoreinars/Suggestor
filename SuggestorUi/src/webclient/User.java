@@ -109,14 +109,19 @@ public class User extends Item implements Displayable
     
     public <T extends Item> Map<String, T> getXRecommendations(String movieId)
     {
+        String attKey = Configuration.getValue("defaultAttributeKey");
+        String attValue = "";
+        return this.getXRecommendations(movieId, attKey, attValue);
+    }
+    
+    public <T extends Item> Map<String, T> getXRecommendations(String movieId, String attKey, String attValue)
+    {
         AttributeCollection.clear();
         System.out.println("Getting the Recommendations...");
         int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
         int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
-        int nSecondUsers = Integer.parseInt(Configuration.getValue("nSecondUsers"));
-        int kTopSecondUsers = Integer.parseInt(Configuration.getValue("kTopSecondUsers"));
         
-        GetExtendedMovieRecommendationsMessage message = new GetExtendedMovieRecommendationsMessage(movieId, nFirstUsers, nSecondUsers, kTopSecondUsers, k);
+        GetExtendedMovieRecommendationsMessage message = new GetExtendedMovieRecommendationsMessage(movieId, nFirstUsers, attKey, attValue, k);
         
         ServiceEvent preEvent = new ServiceEvent(message, null);
         ServiceWorker.getInstance().fireOnPreCommunicationEvents(preEvent);

@@ -29,6 +29,10 @@ public class Configuration
     
     public static String getValue(String key)
     {
+        if(!configuration.resourcebundle.containsKey(key))
+        {
+            return "";
+        }
         return configuration.resourcebundle.getString(key);
     }
 

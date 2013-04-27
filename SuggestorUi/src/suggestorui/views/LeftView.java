@@ -117,7 +117,7 @@ public class LeftView extends WebComponentPanel implements ComponentListener
                 AttributeCollection.printToScreen();
                 for(String attKey : AttributeCollection.getAttributeKeys())
                 {
-                    String keyName = Configuration.getValue(attKey);
+                    String keyName = "".equals(Configuration.getValue(attKey)) ? attKey : Configuration.getValue(attKey);
                     int totalcount = 0;
                     WebPanel attValuePanes = new WebPanel();
                     attValuePanes.setLayout(new BoxLayout(attValuePanes, BoxLayout.Y_AXIS));
@@ -142,6 +142,8 @@ public class LeftView extends WebComponentPanel implements ComponentListener
                     this.add(attKeyPane);
                 }
             }
+            this.repaint();
+            this.updateUI();
         }
         
         private void removeCollapsible()

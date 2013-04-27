@@ -21,6 +21,11 @@ public class ItemVizModel<T extends Item>
     {
         Map<String, T> recommendations = User.getCurrent().getRecommendations();
         graph = new ItemGraph<>(recommendations);
+        this.initGraph();
+    }
+    
+    private void initGraph()
+    {
         String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));
         graph.addAttribute("ui.stylesheet", graphInitStyle);
         graph.addAttribute("ui.antialias");
@@ -39,10 +44,17 @@ public class ItemVizModel<T extends Item>
         graph.buildFromItems(attKey);
     }
     
+    public void updateGraph(String attKey, Map<String, T> recommendations)
+    {
+        graph.clear();
+        this.initGraph();
+        this.graph.setRecommendations(recommendations);
+        graph.buildFromItems(attKey);
+    }
+    
     public void selectItem(String itemId)
     {
         this.graph.setSelectedNode(itemId);
     }
-    
     
 }

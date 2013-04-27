@@ -11,12 +11,12 @@ package webclient.messaging;
  */
 public class GetExtendedMovieRecommendationsMessage extends GetMovieRecommendationsMessage
 {
-    public GetExtendedMovieRecommendationsMessage(String movieId, int nFirstUsers, int nSecondUsers, int kTopSecondUsers, int k)
+    public GetExtendedMovieRecommendationsMessage(String movieId, int nFirstUsers, String attKey, String attValue, int k)
     {
         super(k, nFirstUsers);
         this.addParameter("movieId", movieId);
-        this.addParameter("secondaryUserN", new Integer(nSecondUsers).toString());
-        this.addParameter("topSecondaryUsersN", new Integer(kTopSecondUsers).toString());
+        this.addParameter("filterKey", attKey);
+        this.addParameter("filterValue", attValue);
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.alee.laf.panel.WebPanel;
 import java.awt.BorderLayout;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.util.Date;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -23,6 +24,7 @@ import suggestorui.Configuration;
 import suggestorui.ItemGraph;
 import suggestorui.ItemVizModel;
 import webclient.MovieItem;
+import webclient.User;
 
 
 /**
@@ -38,6 +40,7 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private WebBreadcrumb breadcrumbs;
     private ViewerPipe pipe;
     private View graphView;
+    private Date lastClickTime = new Date();
     
     public ItemVizView(ItemVizModel model)
     {
@@ -121,6 +124,17 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         this.model.selectItem(nodeId);
         MovieItem movie = (MovieItem) this.model.getGraph().getSelectedNode().getItem();
         this.rightView.getMovieView().updateView(movie);
+        
+        Date currentClickTime = new Date();
+        long interval = currentClickTime.getTime() - this.lastClickTime.getTime();
+        //System.out.println("interval: " + interval);
+        if(interval <= 200)
+        {
+            System.out.println("Awesome!!! - Detected Double Click");
+            int nRecommendations = User.getCurrent().getXRecommendations(movie.getItemId()).size();
+            this.model.updateGraph(Configuration.getValue("defaultAttributeKey"));
+        }
+        this.lastClickTime = currentClickTime;
     }
 
     @Override

@@ -28,7 +28,11 @@ public class ItemGraph<T extends Item> extends SingleGraph
     public ItemGraph(final Map<String, T> recommendations)
     {
         super("Suggestor - Recommendations");
-        
+        this.setRecommendations(recommendations);
+    }
+    
+    public final void setRecommendations(final Map<String, T> recommendations)
+    {
         setNodeFactory(new NodeFactory<ItemNode<T>>() {
             @Override
             public ItemNode<T> newInstance(String id, Graph graph) 
@@ -49,10 +53,8 @@ public class ItemGraph<T extends Item> extends SingleGraph
         });
     }
     
-    
     public boolean buildFromItems(String attKey)
     {
-        //this.clear();
         if(AttributeCollection.isEmpty())
         {
             return false;
@@ -283,5 +285,17 @@ public class ItemGraph<T extends Item> extends SingleGraph
         }
         this.selectedNode = (ItemNode<T>)this.getNode(id);
         ((Highlightable)this.selectedNode).highlight(Highlightable.NODE_SELECTED_HIGHLIGHT);
+    }
+
+    private void clearItems() 
+    {
+        for(ItemNode<T> node : this.getEachNodeItem())
+        {
+            this.removeNode(node.getId());
+        }
+//        for(ItemEdge<T> edge : this.getEachEdgeItem())
+//        {
+//            this.removeEdge(edge);
+//        }
     }
 }

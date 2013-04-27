@@ -183,6 +183,8 @@ public class SuggestorClient extends DefaultHttpClient
                     T item = Item.createFromXml(classname, this.toInnerXml(result.item(i)));
                     this.items.put(item.getItemId(), item);
                 }
+                
+                System.out.println("Real Size of things: " + result.getLength());
 
             } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException | ClassNotFoundException ex) {
                 Logger.getLogger(SuggestorClient.class.getName()).log(Level.SEVERE, null, ex);
