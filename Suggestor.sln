@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieSuggestor", "MovieSugg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportMoviePosters", "ImportMoviePosters\ImportMoviePosters.csproj", "{1E31166F-6861-4FA0-B251-20169195C432}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMovieSuggestor", "TestMovieSuggestor\TestMovieSuggestor.csproj", "{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,16 @@ Global
 		{1E31166F-6861-4FA0-B251-20169195C432}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{1E31166F-6861-4FA0-B251-20169195C432}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{1E31166F-6861-4FA0-B251-20169195C432}.Release|x86.ActiveCfg = Release|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9A38A559-FE71-42AD-8EDB-9DEFB3811F03}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

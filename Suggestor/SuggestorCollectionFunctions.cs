@@ -34,7 +34,10 @@ namespace Suggestor
             {
                 termProductSum += user.CollectionLines[lineId].Weight * otherUser.CollectionLines[lineId].Weight;
             }
-            cosScore = termProductSum / (GetSize(user) * GetLimitedSize(otherUser, mutualLines));
+            double vectorNormalizingMultiplication = (GetSize(user) * GetLimitedSize(otherUser, mutualLines));
+            if (vectorNormalizingMultiplication == 0)
+                return 0;
+            cosScore = termProductSum / vectorNormalizingMultiplication;
             return cosScore;
         }
 

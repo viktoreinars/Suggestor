@@ -23,14 +23,14 @@ namespace MovieSuggestor
             if (singleton == null)
             {
                 singleton = new MovieSuggestor();
-                singleton.Initialize();
+                //singleton.Initialize();
             }
             return singleton;
         }
 
         private void Initialize()
-        {            
-            // Initialize a suggestor instance with TFIDF as the recommender engine.
+        {
+            // Initialize a suggestor instance with CollaborativeFiltering as the recommender engine.
             // Pre-Calculations are done in constructor
             MovieExtracter.GetInstance().Initialize();
             Dictionary<string, SuggestorItem> movies = MovieExtracter.GetInstance().GetMovies().ToDictionary(x => x.Id.ToString(), x => (SuggestorItem)x);
@@ -41,11 +41,21 @@ namespace MovieSuggestor
             suggestor.Initialize();
         }
 
+        public void InitializeTest()
+        {
+            suggestor = new SuggestorConnector(null, new Dictionary<string, SuggestorItem>(), users, new Suggestor.Algorithms.CollaborativeFiltering(10));
+            suggestor.Initialize();
+        }
+
         public Dictionary<string, SuggestorUser> AllUsers
         {
             get
             {
                 return users;
+            }
+            set
+            {
+                users = value;
             }
         }
 
@@ -86,11 +96,20 @@ namespace MovieSuggestor
             return currentUser;
         }
 
+        /// <summary>
+        /// Should only be used for testing
+        /// </summary>
+        /// <param name="user"></param>
+        public void SetCurrentUser(User user)
+        {
+            currentUser = user;
+        }
+
         public List<Movie> RecommendMovies(int userN, int n)
         {
             // Get similar users
             Dictionary<SuggestorUser, double> recommendedUsers = suggestor.SuggestUsers(users.Values.ToList(), currentUser, userN);
-
+            
             // Get top aggregate scored movies
             List<Movie> recommendedMovies = GetTopMovies(recommendedUsers, n);
 
@@ -128,6 +147,7 @@ namespace MovieSuggestor
         private List<Movie> GetTopMovies(Dictionary<SuggestorUser, double> recommendedUsers, int numberOfMoviesToReturn)
         {
             Dictionary<Movie, double> topMovies = new Dictionary<Movie, double>();
+            Dictionary<Movie, double> estimatedMovieRatings = new Dictionary<Movie, double>();
             double normalizingFactor = 0; // k = 1 / sum(similarity(user, user-prime))
             foreach (User similarUser in recommendedUsers.Keys)
             {
@@ -135,6 +155,7 @@ namespace MovieSuggestor
                 normalizingFactor += userSimilarityScore;
                 foreach (Rating rating in similarUser.Ratings)
                 {
+                    // Ignore movies user has seen
                     if (currentUser.Ratings.Exists(currentUserRating => currentUserRating.MovieId == rating.MovieId)) continue;
                     if (!(topMovies.Keys.Contains(rating.Movie)))
                         topMovies.Add(rating.Movie, 0.0);
