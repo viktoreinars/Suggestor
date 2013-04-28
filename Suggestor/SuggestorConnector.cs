@@ -39,9 +39,9 @@ namespace Suggestor
             return recommenderEngine.SuggestNItems(collections, compareCollection, n);
         }
 
-        public Dictionary<SuggestorCollection, double> SuggestCollections(SuggestorCollection compareCollection, int n)
+        public Dictionary<SuggestorCollection, double> SuggestCollections(List<SuggestorCollection> collectionsToCompareTo, SuggestorCollection compareCollection, int n)
         {
-            return recommenderEngine.SuggestNCollections(collections, compareCollection, n);
+            return recommenderEngine.SuggestNCollections(collectionsToCompareTo, compareCollection, n);
         }
 
         public Dictionary<SuggestorUser, double> SuggestUsers(List<SuggestorUser> usersToCompareTo, SuggestorUser user, int n)

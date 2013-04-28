@@ -29,7 +29,7 @@ namespace Suggestor.Algorithms
             Dictionary<string, double> itemAggregation = new Dictionary<string, double>();
 
             // Find top similar collections
-            Dictionary<SuggestorCollection, double> topCollections = SuggestNCollections(collections, compareCollection, 10);
+            Dictionary<SuggestorCollection, double> topCollections = SuggestNCollections(collections.Values.ToList(), compareCollection, n);
 
             foreach (SuggestorCollection collection in topCollections.Keys)
             {
@@ -50,11 +50,11 @@ namespace Suggestor.Algorithms
             return itemAggregation;
         }
 
-        public override Dictionary<SuggestorCollection, double> SuggestNCollections(Dictionary<string, SuggestorCollection> collections, SuggestorCollection compareCollection, int n)
+        public override Dictionary<SuggestorCollection, double> SuggestNCollections(List<SuggestorCollection> collections, SuggestorCollection compareCollection, int n)
         {
             // TODO: Disgusting code
             Dictionary<SuggestorCollection, double> topCollections = new Dictionary<SuggestorCollection, double>();
-            List<SuggestorCollection> compareCollections = collections.Values.ToList();
+            List<SuggestorCollection> compareCollections = collections;
             compareCollections.Remove(compareCollection);
             // Calculate all weights
             // TODO: Cache this. Per instance?

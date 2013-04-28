@@ -14,7 +14,7 @@ namespace TestMovieSuggestor
         {
             int numberOfFolds = 5;
 
-            int numberOfSimilarUsersToGet = 10;
+            int numberOfSimilarUsersToGet = 20;
             int numberOfSimilarMoviesToGet = 10;
 
             double averageRecall = 0.0;
@@ -40,7 +40,9 @@ namespace TestMovieSuggestor
 
                 double recallAggregate = 0;
                 double precisionAggregate = 0;
-                double recallQuality = 0;
+                double recallQualityAggregate = 0;
+                int usersTested = 0;
+                double usersWithRelevantRatings = 0;
 
                 foreach (User testUser in testUsers)
                 {
@@ -52,39 +54,54 @@ namespace TestMovieSuggestor
                     List<Rating> relevantRatings = baseUser.Ratings.Join(recommendedMovies, rating => rating.MovieId, movie => movie.Id, (rating, movie) => rating).ToList();
                     //var movieToRatingIntersection =
                     //    (from movie in recommendedMovies select movie.Id).Intersect(from rating in baseUser.Ratings select rating.MovieId);
-
+                    double userRecallQuality = 0;
                     foreach (Rating rating in relevantRatings)
                     {
-                        recallQuality += (double)rating.Rating1 / 5.0;
+                        userRecallQuality += (double)rating.Rating1 / 5.0;
                     }
 
                     double relevant = relevantRatings.Count();
                     double recall = relevant / (double)baseUser.Ratings.Count;
                     double precision = relevant / (double)numberOfSimilarMoviesToGet;
-                    recallQuality /= (double)relevantRatings.Count;
+                    if (relevant == 0)
+                        userRecallQuality = 0;
+                    else
+                    {
+                        userRecallQuality /= (double)relevantRatings.Count;
+                        usersWithRelevantRatings++;
+                    }
                     
 
                     recallAggregate += recall;
                     precisionAggregate += precision;
+                    recallQualityAggregate += userRecallQuality;
+
+                    usersTested++;
+                    if (usersTested % 100.0 == 0) Console.WriteLine(usersTested + " users tested");
                 }
                 
                 // See if 
                 recallAggregate /= (double)testUsers.Count;
                 precisionAggregate /= (double)testUsers.Count;
-                recallQuality /= (double)testUsers.Count;
+                recallQualityAggregate /= usersWithRelevantRatings;
 
                 averageRecall += recallAggregate;
                 averagePrecision += precisionAggregate;
+                averageRecallQuality += recallQualityAggregate;
+
+                Console.WriteLine("Done with fold number " + fileNumber);
             }
 
-            averageRecall /= (int)numberOfFolds;
-            averagePrecision /= (int)numberOfFolds;
-            averageRecallQuality /= (int)numberOfFolds;
+            averageRecall /= (double)numberOfFolds;
+            averagePrecision /= (double)numberOfFolds;
+            averageRecallQuality /= (double)numberOfFolds;
+            double f1Score = 2.0 * (averagePrecision * averageRecall / (averagePrecision + averageRecall));
 
             Console.WriteLine("Recommender evaluation. Folds = " + numberOfFolds + ", NumberOfSimilarUsersConsidered = " + numberOfSimilarUsersToGet + ", NumberOfMoviesToRecommend: " + numberOfSimilarMoviesToGet);
             Console.WriteLine("Average fold-user recall: " + averageRecall);
             Console.WriteLine("Average fold-user precision: " + averagePrecision);
             Console.WriteLine("Average fold-user recall quality: " + averageRecallQuality);
+            Console.WriteLine("Average F1 Score: " + f1Score);
             Console.ReadLine();
         }
 

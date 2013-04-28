@@ -10,15 +10,18 @@ namespace Suggestor
         public static double CosineScore(SuggestorCollection collection, SuggestorCollection otherCollection)
         {
             // TF-IDF
-            Dictionary<string, SuggestorCollectionLine> mutualInvoiceLines = new Dictionary<string, SuggestorCollectionLine>();
-            mutualInvoiceLines = collection.CollectionLines.Keys.Intersect(otherCollection.CollectionLines.Keys).ToDictionary(t => t, t => collection.CollectionLines[t]);
+            Dictionary<string, SuggestorCollectionLine> mutualAttributes = new Dictionary<string, SuggestorCollectionLine>();
+            mutualAttributes = collection.CollectionLines.Keys.Intersect(otherCollection.CollectionLines.Keys).ToDictionary(t => t, t => collection.CollectionLines[t]);
             double cosScore = 0;
             double termProductSum = 0;
-            foreach (string lineNo in mutualInvoiceLines.Keys)
+            foreach (string lineNo in mutualAttributes.Keys)
             {
                 termProductSum += collection.CollectionLines[lineNo].Weight * otherCollection.CollectionLines[lineNo].Weight;
             }
-            cosScore = termProductSum / (GetSize(collection) * GetLimitedSize(otherCollection, mutualInvoiceLines));
+            double vectorNormalizingMultiplication = (GetSize(collection) * GetLimitedSize(otherCollection, mutualAttributes));
+            if (vectorNormalizingMultiplication == 0)
+                return 0;
+            cosScore = termProductSum / vectorNormalizingMultiplication;
             return cosScore;
         }
 
