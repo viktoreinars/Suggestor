@@ -7,7 +7,7 @@ namespace Suggestor
 {
     public interface SuggestorCollection
     {
-        string UserId { get; set; }
+        //string UserId { get; set; }
         string CollectionId { get; set; }
         Dictionary<string, SuggestorCollectionLine> CollectionLines { get; set; }
         //string GetUserId();

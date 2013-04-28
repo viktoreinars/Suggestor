@@ -12,6 +12,8 @@ namespace MovieSuggestor
         private SuggestorConnector suggestor;        
         
         private static MovieSuggestor singleton;
+        // Controls how much genre dis-similarity penalizes movie recommendation score. 1 = Max, 0 = 
+        private static double explorationFactor = 1;
 
         // Hack
         private Dictionary<string, SuggestorUser> users = null;
@@ -33,11 +35,11 @@ namespace MovieSuggestor
             // Initialize a suggestor instance with CollaborativeFiltering as the recommender engine.
             // Pre-Calculations are done in constructor
             MovieExtracter.GetInstance().Initialize();
-            Dictionary<string, SuggestorItem> movies = MovieExtracter.GetInstance().GetMovies().ToDictionary(x => x.Id.ToString(), x => (SuggestorItem)x);
+            Dictionary<string, SuggestorCollection> movies = MovieExtracter.GetInstance().GetMovies().ToDictionary(x => x.Id.ToString(), x => (SuggestorCollection)x);
             //Dictionary<string, SuggestorCollection> ratings = .ToDictionary(x => (x.Key), x => (SuggestorItem)x.Value);
             users = MovieExtracter.GetInstance().GetUsers().ToDictionary(x => (x.Id.ToString()), x => (SuggestorUser)x);
 
-            suggestor = new SuggestorConnector(null, movies, users, new Suggestor.Algorithms.CollaborativeFiltering(10));            
+            suggestor = new SuggestorConnector(null, null, users, new Suggestor.Algorithms.CollaborativeFiltering(10));            
             suggestor.Initialize();
         }
 
@@ -128,7 +130,7 @@ namespace MovieSuggestor
             // Find highest ranked movies & filter by attributes
             List<Movie> topMovies = null;
             // Filter by genre
-            if (filterKey.ToLower() == "genre") topMovies = GetTopFilteredMovies(recommendedUsers.Keys.Cast<User>().ToList(), movieId, n);
+            if (filterKey.ToLower() == "genre") topMovies = GetTopFilteredMovies(recommendedUsers, movieId, n);
             // Filtering done by users - Already happened at start of function
             else topMovies = GetTopMovies(recommendedUsers, n);
 
@@ -180,28 +182,46 @@ namespace MovieSuggestor
             return recommendedMovies;
         }
 
-        private List<Movie> GetTopFilteredMovies(List<User> recommendedUsers, int movieId, int numberOfMoviesToReturn)
+        private List<Movie> GetTopFilteredMovies(Dictionary<SuggestorUser, double> recommendedUsers, int movieId, int numberOfMoviesToReturn)
         {
             Dictionary<Movie, double> topMovies = new Dictionary<Movie, double>();
             Movie queryMovie = GetMovie(movieId);
+
+            // Find cosine similarity between movie genres
+
             // These are only users that have rated movie and filtered by user groups - if needed
-            foreach (User similarUser in recommendedUsers.ToList())
+            double normalizingFactor = 0; // k = 1 / sum(similarity(user, user-prime))
+            foreach (User similarUser in recommendedUsers.Keys)
             {
+                double userSimilarityScore = recommendedUsers[similarUser];
+                normalizingFactor += userSimilarityScore;
                 foreach (Rating rating in similarUser.Ratings)
                 {
-                    if (!(IsSimilar(queryMovie, rating.Movie))) continue; // Does movie pass our filtering?
+                    //if (!(IsSimilar(queryMovie, rating.Movie))) continue; // Does movie pass our filtering?
                     if (rating.MovieId == movieId) continue; // Dont want to recommend the movie we are extending the recommendation from. Add it later
+                    double genreSimilarityScore = suggestor.SuggestCollections(new List<SuggestorCollection>() { rating.Movie }, queryMovie, 1).Values.ToList()[0];
                     if (!(topMovies.Keys.Contains(rating.Movie)))
                         topMovies.Add(rating.Movie, 0.0);
                     // Formula: R(u,i) = (1/N) * Sum(R(u,i) in SimilarUsers)
-                    topMovies[rating.Movie] += ((double)rating.Rating1 / (double)recommendedUsers.Count);
+                   // topMovies[rating.Movie] += ((double)rating.Rating1 / (double)recommendedUsers.Count);
+                    //double genreSimilarityToExploration = genreSimilarityScore * explorationFactor;
+                    //if (explorationFactor == 0) genreSimilarityToExploration = 1;
+                    topMovies[rating.Movie] += (userSimilarityScore * ((double)rating.Rating1 * (genreSimilarityScore * explorationFactor)));
                 }
+            }
+
+            normalizingFactor = 1.0 / normalizingFactor;
+
+            foreach (Movie canditateMovie in topMovies.Keys.ToList())
+            {
+                // Formula: R(u,i) = normalizingFactor * sum(similarity(user, user-prime) * itemRating)
+                topMovies[canditateMovie] *= normalizingFactor;
             }
 
             Dictionary<Movie, double> sortedDict = (from entry in topMovies orderby entry.Value descending select entry)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            List<Movie> recommendedMovies = sortedDict.Keys.Take(numberOfMoviesToReturn).ToList();            
+            List<Movie> recommendedMovies = sortedDict.Keys.Take(numberOfMoviesToReturn).ToList();
 
             return recommendedMovies;
         }
@@ -211,10 +231,10 @@ namespace MovieSuggestor
             // Find groups used for recommendations
             foreach (Movie recommendedMovie in recommendedMovies)
             {
-                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "AgeGroup");
+                /*recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "AgeGroup");
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Occupation");
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Gender");
-                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Zipcode");
+                recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "Zipcode");*/
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "RankedAgeGroup");
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "RankedOccupation");
                 recommendedMovie.Attributes.RemoveAll(pair => pair.Key == "RankedGender");
@@ -274,7 +294,7 @@ namespace MovieSuggestor
                 List<System.Collections.Generic.KeyValuePair<string, double>> topAgeGroups = ageGroups.ToList();
                 topAgeGroups.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); } );
                 topAgeGroups.Reverse();
-                recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("AgeGroup", topAgeGroups[0].Key));
+                //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("AgeGroup", topAgeGroups[0].Key));
 
                 // Ranked age groups
                 List<System.Collections.Generic.KeyValuePair<string, double>> topRankedAgeGroups = rankedAgeGroups.ToList();
@@ -286,7 +306,7 @@ namespace MovieSuggestor
                 List<System.Collections.Generic.KeyValuePair<string, double>> topOccupationGroups = occupationGroups.ToList();
                 topOccupationGroups.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); } );
                 topOccupationGroups.Reverse();
-                recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", topOccupationGroups[0].Key));
+                //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Occupation", topOccupationGroups[0].Key));
 
                 // Ranked Occupation groups
                 List<System.Collections.Generic.KeyValuePair<string, double>> topRankedOccupationGroups = rankedOccupationGroups.ToList();
@@ -298,7 +318,7 @@ namespace MovieSuggestor
                 List<System.Collections.Generic.KeyValuePair<string, double>> topGenderGroups = genderGroups.ToList();
                 topGenderGroups.Sort((firstPair, nextPair) => { return firstPair.Value.CompareTo(nextPair.Value); } );
                 topGenderGroups.Reverse();
-                recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", topGenderGroups[0].Key));
+                //recommendedMovie.Attributes.Add(new KeyValuePair<string, string>("Gender", topGenderGroups[0].Key));
 
                 // Ranked gender groups
                 List<System.Collections.Generic.KeyValuePair<string, double>> topRankedGenderGroups = rankedGenderGroups.ToList();
@@ -373,34 +393,5 @@ namespace MovieSuggestor
             if (queryMovie.Western) if (!compareMovie.Western) return false;
             return true;
         }
-
-        /*
-        private List<Movie> FilterMovies(List<Movie> movies, int movieId)
-        {
-            // TODO: Feel like this could be done dynamically - or at least cleaner
-            Movie queryMovie = GetMovie(movieId);
-            List<Movie> filteredMovies = movies;
-            if (queryMovie.Action) filteredMovies.Where(movie => movie.Action == queryMovie.Action);
-            if (queryMovie.Adventure) filteredMovies.Where(movie => movie.Adventure == queryMovie.Adventure);
-            if (queryMovie.Animation) filteredMovies.Where(movie => movie.Animation == queryMovie.Animation);
-            if (queryMovie.Childrens) filteredMovies.Where(movie => movie.Childrens == queryMovie.Childrens);
-            if (queryMovie.Comedy) filteredMovies.Where(movie => movie.Comedy == queryMovie.Comedy);
-            if (queryMovie.Crime) filteredMovies.Where(movie => movie.Crime == queryMovie.Crime);
-            if (queryMovie.Documentary) filteredMovies.Where(movie => movie.Documentary == queryMovie.Documentary);
-            if (queryMovie.Drama) filteredMovies.Where(movie => movie.Drama == queryMovie.Drama);
-            if (queryMovie.Fantasy) filteredMovies.Where(movie => movie.Fantasy == queryMovie.Fantasy);
-            if (queryMovie.Film_Noir) filteredMovies.Where(movie => movie.Film_Noir == queryMovie.Film_Noir);
-            if (queryMovie.Horror) filteredMovies.Where(movie => movie.Horror == queryMovie.Horror);
-            if (queryMovie.Musical) filteredMovies.Where(movie => movie.Musical == queryMovie.Musical);
-            if (queryMovie.Mystery) filteredMovies.Where(movie => movie.Mystery == queryMovie.Mystery);
-            if (queryMovie.Romance) filteredMovies.Where(movie => movie.Romance == queryMovie.Romance);
-            if (queryMovie.Sci_Fi) filteredMovies.Where(movie => movie.Sci_Fi == queryMovie.Sci_Fi);
-            if (queryMovie.Thriller) filteredMovies.Where(movie => movie.Thriller == queryMovie.Thriller);
-            if (queryMovie.Unknown) filteredMovies.Where(movie => movie.Unknown == queryMovie.Unknown);
-            if (queryMovie.War) filteredMovies.Where(movie => movie.War == queryMovie.War);
-            if (queryMovie.Western) filteredMovies.Where(movie => movie.Western == queryMovie.Western);
-            return filteredMovies;
-
-        }*/
     }
 }

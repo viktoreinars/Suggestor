@@ -8,22 +8,10 @@ using Suggestor;
 namespace MovieSuggestor
 {
     [XmlType("Item")]
-    public partial class Movie : SuggestorItem, SuggestorSerializeable
+    public partial class Movie : SuggestorCollection, SuggestorSerializeable
     {
         List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
         private bool genresAdded = false; // TODO: Extreme hack. Please remove
-
-        string SuggestorItem.Id
-        {
-            get
-            {
-                return Id.ToString();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public string Description
         {
@@ -56,8 +44,6 @@ namespace MovieSuggestor
         }
 
         #region Extra properties for serialization
-
-
 
         public List<KeyValuePair<string, string>> Attributes
         {
@@ -96,5 +82,96 @@ namespace MovieSuggestor
         }
 
         #endregion
+
+        #region SuggestorCollection implementations
+
+        [XmlIgnore]
+        public string CollectionId
+        {
+            get
+            {
+                return Id.ToString();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [XmlIgnore]
+        public Dictionary<string, SuggestorCollectionLine> CollectionLines
+        {
+            get
+            {
+                Dictionary<string, SuggestorCollectionLine> attributeCollection = new Dictionary<string, SuggestorCollectionLine>();
+                foreach (KeyValuePair<string, string> attribute in Attributes)
+                {
+                    SuggestorCollectionLine genre = new Genre();
+                    genre.Id = attribute.Value;
+                    attributeCollection.Add(attribute.Value, genre);
+                }
+                return attributeCollection;
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        #endregion
+    }
+
+    // Ugly
+    class Genre : SuggestorCollectionLine
+    {
+        private string genreName;
+
+        public string Id
+        {
+            get
+            {
+                return genreName;
+            }
+            set
+            {
+                genreName = value;
+            }
+        }
+
+        public string Description
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public double Quantity
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public double Weight
+        {
+            get
+            {
+                return 1.0;
+            }
+            set
+            {
+                Weight = value;
+            }
+        }
     }
 }

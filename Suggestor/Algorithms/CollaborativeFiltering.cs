@@ -23,12 +23,14 @@ namespace Suggestor.Algorithms
 
         public override Dictionary<string, double> SuggestNItems(Dictionary<string, SuggestorCollection> collections, SuggestorCollection compareCollection, int n)
         {
+            throw new NotImplementedException("Not used");
+            /*
             if (compareCollection.CollectionLines.Count == 0) return null;
 
             Dictionary<string, double> itemAggregation = new Dictionary<string, double>();
 
             // Find top similar collections
-            Dictionary<SuggestorCollection, double> topCollections = SuggestNCollections(collections, compareCollection, 10);
+            Dictionary<SuggestorCollection, double> topCollections = SuggestNCollections(collections.Values, compareCollection, 10);
 
             foreach (SuggestorCollection collection in topCollections.Keys)
             {
@@ -47,13 +49,14 @@ namespace Suggestor.Algorithms
             itemAggregationList.Reverse();
             itemAggregation = itemAggregationList.ToDictionary(pair => pair.Key, pair => pair.Value);
             return itemAggregation;
+             */
         }
 
-        public override Dictionary<SuggestorCollection, double> SuggestNCollections(Dictionary<string, SuggestorCollection> collections, SuggestorCollection compareCollection, int n)
+        public override Dictionary<SuggestorCollection, double> SuggestNCollections(List<SuggestorCollection> collections, SuggestorCollection compareCollection, int n)
         {
             // TODO: Disgusting code
             Dictionary<SuggestorCollection, double> topCollections = new Dictionary<SuggestorCollection, double>();
-            List<SuggestorCollection> compareCollections = collections.Values.ToList();
+            List<SuggestorCollection> compareCollections = collections;
             compareCollections.Remove(compareCollection);
             
             // TODO: Cache this. Per instance?
@@ -69,8 +72,7 @@ namespace Suggestor.Algorithms
             Dictionary<SuggestorCollection, double> returnInvoices = new Dictionary<SuggestorCollection, double>();
             for (int i = 0; i < n; i++)
             {
-                if (topValues[i].Value != 0)
-                    returnInvoices.Add(topValues[i].Key, topValues[i].Value);
+                returnInvoices.Add(topValues[i].Key, topValues[i].Value);
             }
             return returnInvoices;
         }
