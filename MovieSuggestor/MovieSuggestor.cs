@@ -28,7 +28,7 @@ namespace MovieSuggestor
             if (singleton == null)
             {
                 singleton = new MovieSuggestor();
-                singleton.Initialize();
+                //singleton.Initialize();
             }
             return singleton;
         }
@@ -347,22 +347,26 @@ namespace MovieSuggestor
             List<SuggestorUser> usersThatRatedMovie = users.Where(user => ((User)user).Ratings.Exists(rating => rating.MovieId == movieId)).ToList();
             if (usersThatRatedMovie.Count == 0) return null; // No users found that rated the movie highly...shouldnt happen
 
-            List<string> userAttributeFilterList = new List<string> { "agegroup", "occupation", "gender", "zipcode" };
+            List<string> userAttributeFilterList = new List<string> { "agegroup", "occupation", "gender", "zipcode", "rankedagegroup", "rankedoccupation", "rankedgender", "rankedzipcode" };
 
             if (userAttributeFilterList.Contains(filterKey.ToLower()))
             {
                 switch (filterKey.ToLower())
                 {
                     case "agegroup":
+                    case "rankedagegroup":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).AgeGroup == filterValue).ToList();
                         break;
                     case "occupation":
+                    case "rankedoccupation":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Occupation == filterValue).ToList();
                         break;
                     case "gender":
+                    case "rankedgender":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Gender == filterValue).ToList();
                         break;
                     case "zipcode":
+                    case "rankedzipcode":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Zipcode == filterValue).ToList();
                         break;
                 }
