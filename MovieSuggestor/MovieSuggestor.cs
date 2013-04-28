@@ -12,8 +12,11 @@ namespace MovieSuggestor
         private SuggestorConnector suggestor;        
         
         private static MovieSuggestor singleton;
-        // Controls how much genre dis-similarity penalizes movie recommendation score. 1 = Max, 0 = 
-        private static double explorationFactor = 1;
+        // Controls how much genre similarity accounts for in movie ranking. 
+        // 0 = Genre does not matter/We want to explore
+        // 1 = Genre does matter/Explore some
+        // 4+ = Genre similarity weights heavily/No exploring
+        private static double genreRestrictiveness = 4;
 
         // Hack
         private Dictionary<string, SuggestorUser> users = null;
@@ -25,7 +28,7 @@ namespace MovieSuggestor
             if (singleton == null)
             {
                 singleton = new MovieSuggestor();
-                singleton.Initialize();
+                //singleton.Initialize();
             }
             return singleton;
         }
@@ -204,9 +207,9 @@ namespace MovieSuggestor
                         topMovies.Add(rating.Movie, 0.0);
                     // Formula: R(u,i) = (1/N) * Sum(R(u,i) in SimilarUsers)
                    // topMovies[rating.Movie] += ((double)rating.Rating1 / (double)recommendedUsers.Count);
-                    //double genreSimilarityToExploration = genreSimilarityScore * explorationFactor;
-                    //if (explorationFactor == 0) genreSimilarityToExploration = 1;
-                    topMovies[rating.Movie] += (userSimilarityScore * ((double)rating.Rating1 * (genreSimilarityScore * explorationFactor)));
+                    
+                    double genreSimilarityToExploration = Math.Pow(genreSimilarityScore, genreRestrictiveness);
+                    topMovies[rating.Movie] += (userSimilarityScore * ((double)rating.Rating1 * (genreSimilarityToExploration)));
                 }
             }
 
@@ -344,22 +347,26 @@ namespace MovieSuggestor
             List<SuggestorUser> usersThatRatedMovie = users.Where(user => ((User)user).Ratings.Exists(rating => rating.MovieId == movieId)).ToList();
             if (usersThatRatedMovie.Count == 0) return null; // No users found that rated the movie highly...shouldnt happen
 
-            List<string> userAttributeFilterList = new List<string> { "agegroup", "occupation", "gender", "zipcode" };
+            List<string> userAttributeFilterList = new List<string> { "agegroup", "occupation", "gender", "zipcode", "rankedagegroup", "rankedoccupation", "rankedgender", "rankedzipcode" };
 
             if (userAttributeFilterList.Contains(filterKey.ToLower()))
             {
                 switch (filterKey.ToLower())
                 {
                     case "agegroup":
+                    case "rankedagegroup":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).AgeGroup == filterValue).ToList();
                         break;
                     case "occupation":
+                    case "rankedoccupation":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Occupation == filterValue).ToList();
                         break;
                     case "gender":
+                    case "rankedgender":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Gender == filterValue).ToList();
                         break;
                     case "zipcode":
+                    case "rankedzipcode":
                         usersThatRatedMovie = usersThatRatedMovie.Where(user => ((User)user).Zipcode == filterValue).ToList();
                         break;
                 }
