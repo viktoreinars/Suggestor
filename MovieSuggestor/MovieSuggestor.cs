@@ -12,8 +12,11 @@ namespace MovieSuggestor
         private SuggestorConnector suggestor;        
         
         private static MovieSuggestor singleton;
-        // Controls how much genre dis-similarity penalizes movie recommendation score. 1 = Max, 0 = 
-        private static double explorationFactor = 1;
+        // Controls how much genre similarity accounts for in movie ranking. 
+        // 0 = Genre does not matter/We want to explore
+        // 1 = Genre does matter/Explore some
+        // 4+ = Genre similarity weights heavily/No exploring
+        private static double genreRestrictiveness = 4;
 
         // Hack
         private Dictionary<string, SuggestorUser> users = null;
@@ -204,9 +207,9 @@ namespace MovieSuggestor
                         topMovies.Add(rating.Movie, 0.0);
                     // Formula: R(u,i) = (1/N) * Sum(R(u,i) in SimilarUsers)
                    // topMovies[rating.Movie] += ((double)rating.Rating1 / (double)recommendedUsers.Count);
-                    //double genreSimilarityToExploration = genreSimilarityScore * explorationFactor;
-                    //if (explorationFactor == 0) genreSimilarityToExploration = 1;
-                    topMovies[rating.Movie] += (userSimilarityScore * ((double)rating.Rating1 * (genreSimilarityScore * explorationFactor)));
+                    
+                    double genreSimilarityToExploration = Math.Pow(genreSimilarityScore, genreRestrictiveness);
+                    topMovies[rating.Movie] += (userSimilarityScore * ((double)rating.Rating1 * (genreSimilarityToExploration)));
                 }
             }
 
