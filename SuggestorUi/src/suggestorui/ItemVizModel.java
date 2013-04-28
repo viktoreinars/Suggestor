@@ -15,7 +15,7 @@ import webclient.User;
  * @author Gabriel Dzodom
  * @ CSDL
  */
-public class ItemVizModel<T extends Item> 
+public class ItemVizModel<T extends Item>
 {
     private ItemGraph<T> graph;
     private Map<String, T> recommendations; 
@@ -44,6 +44,17 @@ public class ItemVizModel<T extends Item>
     
     public void updateGraph(String attKey)
     {
+        this.updateGraph(attKey, false);
+    }
+    
+    public void updateGraph(String attKey, boolean force)
+    {
+        if(force)
+        {
+            graph.clear();
+            this.initGraph();
+            this.graph.setRecommendations(recommendations);
+        }
         graph.buildFromItems(attKey);
     }
     
@@ -54,7 +65,6 @@ public class ItemVizModel<T extends Item>
             graph.clear();
             //System.gc();
             //Thread.sleep(1000);
-            System.out.println("Graph Size: " + graph.getNodeCount() + " - " + graph.getEdgeCount());
             this.initGraph();
             this.graph.setRecommendations(recommendations);
             graph.buildFromItems(attKey);
@@ -68,8 +78,4 @@ public class ItemVizModel<T extends Item>
         this.graph.setSelectedNode(itemId);
     }
     
-    public Map<String, T> getRecommendations()
-    {
-        return this.recommendations;
-    }
 }

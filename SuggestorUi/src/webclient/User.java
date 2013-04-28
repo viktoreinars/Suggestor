@@ -10,6 +10,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Root;
 import suggestorui.Configuration;
 import suggestorui.Displayable;
+import suggestorui.Highlightable;
 import suggestorui.ServiceWorker;
 import webclient.messaging.GetExtendedMovieRecommendationsMessage;
 import webclient.messaging.GetMovieRecommendationsMessage;
@@ -78,6 +79,7 @@ public class User extends Item implements Displayable
     public <T extends Item> Map<String, T> getRecommendations()
     {
         AttributeCollection.clear();
+        Highlightable.previousClass.clear();
         //if(recommendations == null)
         {
             System.out.println("Getting the Recommendations...");
@@ -119,6 +121,7 @@ public class User extends Item implements Displayable
         System.out.println("\nBefore Clearing the damn collection...");
         AttributeCollection.printToScreen();
         AttributeCollection.clear();
+        Highlightable.previousClass.clear();
         System.out.println("After Clearing the damn collection...");
         AttributeCollection.printToScreen();
         

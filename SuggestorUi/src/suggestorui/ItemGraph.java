@@ -12,6 +12,8 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.NodeFactory;
 import org.graphstream.graph.implementations.SingleGraph;
+import suggestorui.views.ItemAttributeEvent;
+import suggestorui.views.ItemAttributeEventListener;
 import webclient.AttributeCollection;
 import webclient.Item;
 
@@ -20,7 +22,7 @@ import webclient.Item;
  * @author Gabriel Dzodom
  * @ CSDL
  */
-public class ItemGraph<T extends Item> extends SingleGraph
+public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttributeEventListener
 {
     
     private ItemNode<T> selectedNode;
@@ -68,7 +70,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
             System.out.print(attKey + " ---> ");
             for(String attValue : AttributeCollection.getAttributeValues(attKey))
             {
-                System.out.print(attValue + " ");
+                System.out.println(attValue + " ");
                 Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
                 if(items.length == 1)
                 {
@@ -81,7 +83,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
                     {
                         T source = (T)items[i];
                         T target = (T)items[i + 1];
-                        this.addEdge(source, target);
+                        System.out.println(this.addEdge(source, target).toString());
                     }
                 }
             }
@@ -107,7 +109,7 @@ public class ItemGraph<T extends Item> extends SingleGraph
                 if(items.length == 1)
                 {
                     this.addNodeItem((T)items[0]);
-                    break;
+                    //break;
                 }
                 else
                 {
@@ -309,4 +311,22 @@ public class ItemGraph<T extends Item> extends SingleGraph
 //            this.removeEdge(edge);
 //        }
     }
+
+    @Override
+    public void onSelectedItemAttribute(ItemAttributeEvent event) 
+    {
+        this.highlight(event.getAttKey(), event.getAttValue(), Highlightable.ORANGE_HIGHLIGHT);
+    }
+
+    @Override
+    public void onUnselectedItemAttribute(ItemAttributeEvent event) 
+    {
+        this.restore(event.getAttKey(), event.getAttValue());
+    }
+
+    @Override
+    public void onSelectedAttributeKey(ItemAttributeEvent event) 
+    {
+    }
+
 }

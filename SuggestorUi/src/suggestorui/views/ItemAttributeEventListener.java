@@ -13,5 +13,7 @@ import java.util.EventListener;
  */
 public interface ItemAttributeEventListener extends EventListener 
 {
-    
+    public void onSelectedItemAttribute(ItemAttributeEvent event);
+    public void onUnselectedItemAttribute(ItemAttributeEvent event);
+    public void onSelectedAttributeKey(ItemAttributeEvent event);
 }

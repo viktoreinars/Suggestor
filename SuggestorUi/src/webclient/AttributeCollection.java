@@ -6,6 +6,7 @@ package webclient;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,20 @@ public class AttributeCollection
     {
         ensureInitialization(attrKey, attrValue);
         return collection.get(attrKey).get(attrValue);
+    }
+    
+    public static <T extends Item> Map<String, MovieItem> getItems(String attrKey)
+    {
+        Map<String, MovieItem> toReturn = new HashMap<>();
+        for(String attValue : collection.get(attrKey).keySet())
+        {
+            for (Iterator<Item> it = getCluster(attrKey, attValue).values().iterator(); it.hasNext();) {
+                MovieItem item = (MovieItem) it.next();
+                toReturn.put(item.getItemId(), item);
+            }
+        }
+        
+        return toReturn;
     }
     
     private static void ensureInitialization(String attrKey, String attrValue)

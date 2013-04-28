@@ -18,9 +18,6 @@ import java.awt.event.ComponentListener;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import org.graphstream.ui.swingViewer.View;
@@ -28,6 +25,7 @@ import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
 import org.graphstream.ui.swingViewer.ViewerPipe;
 import suggestorui.Configuration;
+import suggestorui.Highlightable;
 import suggestorui.ItemGraph;
 import suggestorui.ItemVizModel;
 import webclient.AttributeCollection;
@@ -41,7 +39,7 @@ import webclient.User;
  * @author Gabriel Dzodom
  * @ CSDL
  */
-public class ItemVizView extends JFrame implements ViewerListener, ComponentListener
+public class ItemVizView extends JFrame implements ViewerListener, ComponentListener, ItemAttributeEventListener
 {
     private ItemVizModel model;
     private boolean loop = true;
@@ -55,6 +53,8 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private WebLabel info;
     private Map<String, String> movieStack = new HashMap<>();
     private WebButton clearBreadCrumbs;
+    private LeftView leftView;
+    private int nHighlighted = 0;
     
     public ItemVizView(ItemVizModel model)
     {
@@ -67,9 +67,13 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private void initUi() 
     {
         this.rightView = new RightView();
+        this.leftView = new LeftView();
+        this.leftView.addItemAttributeEventListener(model.getGraph());
+        this.leftView.addItemAttributeEventListener(this);
+        
         this.getContentPane().setLayout(new BorderLayout());
         this.initMiddleView();
-        this.getContentPane().add(new LeftView(), BorderLayout.WEST);
+        this.getContentPane().add(leftView, BorderLayout.WEST);
         this.getContentPane().add(rightView, BorderLayout.EAST);
     }
     
@@ -87,8 +91,8 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         WebPanel bottomPanel = new WebPanel();
         bottomPanel.setUndecorated(false);
         info = new WebLabel(String.format("<html><b>Total Recommended Movies: </b>%d &#08;          "
-                                                 + "<b>Top Similar Users: </b>%s &#08;&#08;&#08;</html> ", 
-                                                this.nRecommendations, Configuration.getValue("nFirstUsers")));
+                                                 + "<b>Top Similar Users: </b>%s &#08; <b>Hightlighted: </b>%d &#08;</html>", 
+                                                this.nRecommendations, Configuration.getValue("nFirstUsers"), this.nHighlighted));
         
         clearBreadCrumbs = new WebButton("Clear Bread Crumbs");
         clearBreadCrumbs.setEnabled(false);
@@ -163,8 +167,8 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private void updateBottom()
     {
         info.setText(String.format("<html><b>Total Recommended Movies: </b>%d &#08;          "
-                                                 + "<b>Top Similar Users: </b>%s &#08;</html> ", 
-                                                this.nRecommendations, Configuration.getValue("nFirstUsers")));
+                                                 + "<b>Top Similar Users: </b>%s &#08; <b>Hightlighted: </b>%d</html> ", 
+                                                this.nRecommendations, Configuration.getValue("nFirstUsers"), this.nHighlighted));
     }
     
     private void initGraphViz(JPanel middlePanel)
@@ -213,22 +217,44 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         if(interval <= 250)
         {
             System.out.println("Awesome!!! - Detected Double Click");
-            Map<String, MovieItem> recommendations = User.getCurrent().getXRecommendations(movie.getItemId());
-            
-            
-            this.updateGraph(recommendations);
+            Map<String, MovieItem> recommendations;
+            if(this.leftView.getSelectedAttributePane() == null || 
+               this.leftView.getSelectedAttributePane().getAttKey() == null || this.leftView.getSelectedAttributePane().getAttKey().equals("") ||
+               this.leftView.getSelectedAttributePane().getAttValue() == null || this.leftView.getSelectedAttributePane().getAttValue().equals(""))
+            {
+                recommendations = User.getCurrent().getXRecommendations(movie.getItemId());
+                this.updateGraph(recommendations);
+            }
+            else
+            {
+                String attKey = this.leftView.getSelectedAttributePane().getAttKey();
+                String attValue = this.leftView.getSelectedAttributePane().getAttValue();
+                recommendations = User.getCurrent().getXRecommendations(movie.getItemId(), attKey, attValue);
+                this.updateGraph(attKey, recommendations);
+                System.out.println("Selected Key Pair: " + attKey + ", " + attValue);
+            }
             this.addBreadCrumb(movie.getTitle(), movie.getItemId());
         }
         this.lastClickTime = currentClickTime;
     }
     
-    private void updateGraph(Map<String, MovieItem> recommendations)
+    private void updateGraph(String attKey, Map<String, MovieItem> recommendations)
     {
         nRecommendations = recommendations.size();
         viewer.disableAutoLayout();
-        this.model.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
+        this.model.updateGraph(attKey, recommendations);
         viewer.enableAutoLayout();
         this.updateBottom();
+    }
+
+    private void updateGraph(Map<String, MovieItem> recommendations)
+    {
+        this.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
+//        nRecommendations = recommendations.size();
+//        viewer.disableAutoLayout();
+//        this.model.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
+//        viewer.enableAutoLayout();
+//        this.updateBottom();
     }
 
     @Override
@@ -255,6 +281,30 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     @Override
     public void componentHidden(ComponentEvent e) 
     {
+    }
+
+    @Override
+    public void onSelectedItemAttribute(ItemAttributeEvent event) 
+    {
+        if(event.isRebuildRequired())
+        {
+            String attKey = event.getAttKey();
+            String attValue = event.getAttValue();
+            this.updateGraph(attKey, AttributeCollection.getItems(attKey));
+            this.model.getGraph().highlight(attKey, attValue, Highlightable.ORANGE_HIGHLIGHT);
+        }
+    }
+
+    @Override
+    public void onUnselectedItemAttribute(ItemAttributeEvent event) 
+    {
+    }
+
+    @Override
+    public void onSelectedAttributeKey(ItemAttributeEvent event) 
+    {
+        String attKey = event.getAttKey();
+        this.updateGraph(attKey, AttributeCollection.getItems(attKey));
     }
 
 }

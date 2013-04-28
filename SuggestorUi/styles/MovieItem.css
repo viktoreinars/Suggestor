@@ -71,7 +71,7 @@ node.orange
 {
     shadow-color: rgb(255,127, 42); 
     shadow-mode: gradient-radial;
-    shadow-width: 6px;
+    shadow-width: 10px;
     shadow-offset: 0px;
 }
 

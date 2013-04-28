@@ -6,8 +6,11 @@ package suggestorui.views;
 
 import com.alee.extended.image.WebDecoratedImage;
 import com.alee.extended.image.WebImage;
+import com.alee.extended.panel.WebAccordion;
+import com.alee.extended.panel.WebAccordionStyle;
 import com.alee.extended.panel.WebCollapsiblePane;
 import com.alee.extended.panel.WebComponentPanel;
+import com.alee.laf.combobox.WebComboBox;
 import com.alee.laf.label.WebLabel;
 import com.alee.laf.panel.WebPanel;
 import com.alee.managers.tooltip.TooltipManager;
@@ -20,8 +23,11 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JPanel;
 import suggestorui.Configuration;
 import suggestorui.ServiceWorker;
 import webclient.AttributeCollection;
@@ -36,13 +42,30 @@ import webclient.messaging.ServiceEventListener;
  */
 public class LeftView extends WebComponentPanel implements ComponentListener
 {
+    ItemAttributePanel itemAttributePane;
     public LeftView()
     {
+        itemAttributePane = new ItemAttributePanel();
         this.addElement(new UserView());
-        this.addElement(new ItemAttributePanel());
+        this.addElement(itemAttributePane);
         this.addComponentListener(this);
         this.setUndecorated(false);
         this.setDrawSides(false, false, false, false);
+    }
+    
+    public ItemAttributePanel.WebAttributePanel getSelectedAttributePane()
+    {
+        return this.itemAttributePane.getSelectedPanel();
+    }
+    
+    public void addItemAttributeEventListener(ItemAttributeEventListener listener)
+    {
+        itemAttributePane.addItemAttributeEventListener(listener);
+    }
+    
+    public void removeItemAttributeEventListener(ItemAttributeEventListener listener)
+    {
+        itemAttributePane.removeItemAttributeEventListener(listener);
     }
 
     @Override
@@ -85,6 +108,13 @@ public class LeftView extends WebComponentPanel implements ComponentListener
     
     public class ItemAttributePanel extends WebPanel implements ServiceEventListener, MouseListener
     {
+        protected List<ItemAttributeEventListener> listeners = new ArrayList<>();
+        private WebAttributePanel selected;
+        private int selectedIndex;
+        private boolean hover = false;
+        private WebAccordion attKeyPane;
+        private WebComboBox attKeyList;
+        
         public ItemAttributePanel()
         {
             this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -105,21 +135,32 @@ public class LeftView extends WebComponentPanel implements ComponentListener
             this.add(titlePanel);
             this.setDrawSides(false, false, false, false);
             ServiceWorker.getInstance().addServiceEventListener(this);
-            
             updateUi();
         }
+        
+        public WebAttributePanel getSelectedPanel()
+        {
+            return this.selected;
+        }
+        
         
         private void updateUi()
         {
             this.removeCollapsible();
             if(!AttributeCollection.isEmpty())
             {
+                attKeyPane = new WebAccordion(WebAccordionStyle.accordionStyle);
+                attKeyPane.setMargin(3);
+                attKeyPane.addMouseListener(this);
+                attKeyPane.setMultiplySelectionAllowed(false);
                 AttributeCollection.printToScreen();
+                int firstIndex = AttributeCollection.getAttributeKeys().indexOf(Configuration.getValue("defaultAttributeKey"));
                 for(String attKey : AttributeCollection.getAttributeKeys())
                 {
                     String keyName = "".equals(Configuration.getValue(attKey)) ? attKey : Configuration.getValue(attKey);
                     int totalcount = 0;
-                    WebPanel attValuePanes = new WebPanel();
+                    WebAttributeKeyPanel attValuePanes = new WebAttributeKeyPanel(attKey, "", 4);
+                    attValuePanes.addMouseListener(this);
                     attValuePanes.setLayout(new BoxLayout(attValuePanes, BoxLayout.Y_AXIS));
                     attValuePanes.add(Box.createVerticalGlue());
                     for(String attValue : AttributeCollection.getAttributeValues(attKey))
@@ -135,22 +176,75 @@ public class LeftView extends WebComponentPanel implements ComponentListener
                         attValuePanes.add(panel);
                     }
                     String title = String.format("%s (%d)", keyName, totalcount);
-                    WebCollapsiblePane attKeyPane = new WebCollapsiblePane(title, attValuePanes);
-                    attKeyPane.setMargin(4);
-                    attKeyPane.setExpanded(true);
-                    //attKeyPane.addMouseListener(this);
-                    this.add(attKeyPane);
+                    attKeyPane.addPane(title, attValuePanes);
                 }
+                
+                if(firstIndex > 0)
+                {
+                    Component a = attKeyPane.getContentAt(0);
+                    String a_title = attKeyPane.getTitleAt(0);
+                    Component b = attKeyPane.getContentAt(firstIndex);
+                    String b_title = attKeyPane.getTitleAt(firstIndex);
+                    
+                    attKeyPane.setContentAt(0, b);
+                    attKeyPane.setTitleAt(0, b_title);
+                    attKeyPane.setContentAt(firstIndex, a);
+                    attKeyPane.setTitleAt(firstIndex, a_title);
+                }
+                
+                this.add(attKeyPane);
+                this.selectedIndex = attKeyPane.getFirstSelectedIndex();
             }
             this.repaint();
             this.updateUI();
+        }
+        
+        public String getSeletectedAttributeKey()
+        {
+            int index = this.attKeyPane.getFirstSelectedIndex();
+            String attKey = ((WebAttributeKeyPanel)this.attKeyPane.getContentAt(index)).getAttKey();
+            return attKey;
+        }
+        
+        public void addItemAttributeEventListener(ItemAttributeEventListener listener)
+        {
+            listeners.add(listener);
+        }
+        
+        public void removeItemAttributeEventListener(ItemAttributeEventListener listener)
+        {
+            listeners.remove(listener);
+        }
+        
+        protected synchronized void fireOnSelectedItemAttributeEvents(ItemAttributeEvent event)
+        {
+            for(ItemAttributeEventListener listener : listeners)
+            {
+                listener.onSelectedItemAttribute(event);
+            }
+        }
+        
+        protected synchronized void fireOnUnselectedItemAttributeEvents(ItemAttributeEvent event)
+        {
+            for(ItemAttributeEventListener listener : listeners)
+            {
+                listener.onUnselectedItemAttribute(event);
+            }
+        }
+
+        protected synchronized void fireOnUnselectedAttributeKeyEvents(ItemAttributeEvent event)
+        {
+            for(ItemAttributeEventListener listener : listeners)
+            {
+                listener.onSelectedAttributeKey(event);
+            }
         }
         
         private void removeCollapsible()
         {
             for(Component c : this.getComponents())
             {
-                if(c instanceof WebCollapsiblePane)
+                if(c instanceof WebAccordion)
                 {
                    this.remove(c); 
                 }
@@ -171,11 +265,41 @@ public class LeftView extends WebComponentPanel implements ComponentListener
         @Override
         public void mouseClicked(MouseEvent e) 
         {
+            if(this.selected != null)
+            {
+                ItemAttributeEvent event = new ItemAttributeEvent(selected.getAttKey(), selected.getAttValue());
+                this.fireOnUnselectedItemAttributeEvents(event);
+                this.selected.setBackground(Color.white);
+            }
+            if(e.getSource() instanceof WebAttributePanel)
+            {
+                WebAttributePanel panel = (WebAttributePanel)e.getSource();
+                panel.setBackground(new Color(153,153, 153));                
+                ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), panel.getAttValue());
+                if(selected != null)
+                {
+                    event.setRebuildRequired(!selected.getAttKey().equals(panel.getAttKey()));
+                }
+                this.fireOnSelectedItemAttributeEvents(event);
+                this.selected = panel;
+            }
         }
 
         @Override
         public void mousePressed(MouseEvent e) 
         {
+            if(e.getSource() instanceof WebAccordion)
+            {
+                WebAccordion accordion = (WebAccordion)e.getSource();
+                if(this.selectedIndex != accordion.getFirstSelectedIndex())
+                {
+                    this.selectedIndex = accordion.getFirstSelectedIndex();
+                    WebAttributePanel panel = (WebAttributePanel)accordion.getContentAt(selectedIndex);
+                    
+                    ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), "");
+                    this.fireOnUnselectedAttributeKeyEvents(event);
+                }
+            }
         }
 
         @Override
@@ -186,21 +310,55 @@ public class LeftView extends WebComponentPanel implements ComponentListener
         @Override
         public void mouseEntered(MouseEvent e) 
         {
-//            System.out.println("I am here");
-            Component component = (Component)e.getSource();
-            if(component instanceof WebAttributePanel)
-            {
-                ((WebAttributePanel)component).setBackground(new Color(153,153, 153));
-            }
+            hover = true;
+//            if(e.getSource() instanceof WebAttributeKeyPanel)
+//            {
+//                WebAccordion accordion = (WebAccordion)e.getSource();
+//                if(this.selectedIndex != accordion.getFirstSelectedIndex())
+//                {
+//                    this.selectedIndex = accordion.getFirstSelectedIndex();
+//                    WebAttributePanel panel = (WebAttributePanel)accordion.getContentAt(selectedIndex);
+//                    
+//                    ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), "");
+//                    this.fireOnUnselectedAttributeKeyEvents(event);
+//                }
+//            }
         }
 
         @Override
         public void mouseExited(MouseEvent e) 
         {
-            Component component = (Component)e.getSource();
-            if(component instanceof WebAttributePanel)
+            hover = false;
+        }
+        
+        public class WebAttributeKeyPanel extends JPanel
+        {            
+            private String attKey;
+            private String attValue;
+            
+            public WebAttributeKeyPanel(String attKey, String attValue, int margin)
             {
-                ((WebAttributePanel)component).setBackground(Color.white);
+                this.attKey = attKey;
+                this.attValue = attValue;
+                //this.setMargin(margin);
+            }
+            
+            public WebAttributeKeyPanel(String attKey, String attValue)
+            {
+                this(attKey, attValue, 3);
+            }
+
+            /**
+             * @return the attKey
+             */
+            public String getAttKey() {
+                return attKey;
+            }
+
+            /**
+             */
+            public String getAttValue() {
+                return attValue;
             }
         }
         
@@ -209,11 +367,16 @@ public class LeftView extends WebComponentPanel implements ComponentListener
             private String attKey;
             private String attValue;
             
-            public WebAttributePanel(String attKey, String attValue)
+            public WebAttributePanel(String attKey, String attValue, int margin)
             {
                 this.attKey = attKey;
                 this.attValue = attValue;
-                this.setMargin(3);
+                this.setMargin(margin);
+            }
+            
+            public WebAttributePanel(String attKey, String attValue)
+            {
+                this(attKey, attValue, 3);
             }
 
             /**

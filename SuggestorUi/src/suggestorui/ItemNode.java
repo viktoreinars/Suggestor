@@ -40,6 +40,8 @@ public class ItemNode<T extends Item> extends SingleNode implements Highlightabl
     @Override
     public void highlight(String highlightClass) 
     {
+        String currentClass = this.getAttribute("ui.class") == null ? "" : this.getAttribute("ui.class").toString();
+        Highlightable.previousClass.put(this.getId(), currentClass);
         this.addAttribute("ui.class", highlightClass);
     }
 
@@ -47,7 +49,9 @@ public class ItemNode<T extends Item> extends SingleNode implements Highlightabl
     public void restore() 
     {
         this.removeAttribute("ui.class");
-        this.addAttribute("ui.class", Configuration.getValue("nodeBaseClass"));
+        String prevClass = Highlightable.previousClass.get(this.getId());
+        prevClass = "".equals(prevClass) ? Configuration.getValue("nodeBaseClass") : prevClass;
+        this.setAttribute("ui.class", prevClass);
         this.updateStyle();
     }
 }

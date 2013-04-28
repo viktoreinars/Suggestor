@@ -4,6 +4,9 @@
  */
 package suggestorui;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author Gabriel Dzodom
@@ -21,6 +24,7 @@ public interface Highlightable
     public String VIOLET_HIGHLIGHT = "violet";
     public String PINK_HIGHLIGHT = "pink";
     public String NODE_SELECTED_HIGHLIGHT = "nodeselected";
+    public Map<String, String> previousClass = new HashMap<>();
     
     
     public void highlight(String highlightClass);
