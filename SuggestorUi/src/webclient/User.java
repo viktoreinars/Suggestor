@@ -116,7 +116,12 @@ public class User extends Item implements Displayable
     
     public <T extends Item> Map<String, T> getXRecommendations(String movieId, String attKey, String attValue)
     {
+        System.out.println("\nBefore Clearing the damn collection...");
+        AttributeCollection.printToScreen();
         AttributeCollection.clear();
+        System.out.println("After Clearing the damn collection...");
+        AttributeCollection.printToScreen();
+        
         System.out.println("Getting the Recommendations...");
         int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
         int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));

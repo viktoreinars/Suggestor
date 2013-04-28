@@ -13,7 +13,7 @@ public class GetExtendedMovieRecommendationsMessage extends GetMovieRecommendati
 {
     public GetExtendedMovieRecommendationsMessage(String movieId, int nFirstUsers, String attKey, String attValue, int k)
     {
-        super(k, nFirstUsers);
+        super(nFirstUsers, k);
         this.addParameter("movieId", movieId);
         this.addParameter("filterKey", attKey);
         this.addParameter("filterValue", attValue);

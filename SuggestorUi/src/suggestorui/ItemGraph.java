@@ -38,6 +38,10 @@ public class ItemGraph<T extends Item> extends SingleGraph
             public ItemNode<T> newInstance(String id, Graph graph) 
             {
                 T item = recommendations.get(id);
+                if(item == null)
+                {
+                    System.out.println("Why? Id" + id);
+                }
                 return new ItemNode<>((ItemGraph<T>)graph, item);
             }
         });
@@ -250,7 +254,10 @@ public class ItemGraph<T extends Item> extends SingleGraph
         }
         
         ItemNode<T> node = new ItemNode<>(this, item);
-        this.addNode(item.getItemId());
+        if(this.getNode(item.getItemId()) == null)
+        {
+            this.addNode(item.getItemId());
+        }
         return node;
     }
 
@@ -267,7 +274,11 @@ public class ItemGraph<T extends Item> extends SingleGraph
             targetNode = this.addNodeItem(target);
         }
         ItemEdge<T> edge = new ItemEdge<>(sourceNode, targetNode);
-        this.addEdge(edge.getId(), sourceNode, targetNode);
+        if(this.getEdge(edge.getId()) == null && this.getEdge(new ItemEdge<>(targetNode, sourceNode).getId()) == null)
+        {
+            this.addEdge(edge.getId(), sourceNode, targetNode);
+        }
+        
         return edge;
     }
     

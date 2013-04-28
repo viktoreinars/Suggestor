@@ -34,6 +34,7 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import suggestorui.Configuration;
+import webclient.AttributeCollection;
 import webclient.Item;
 import webclient.User;
 
@@ -178,6 +179,7 @@ public class SuggestorClient extends DefaultHttpClient
                 NodeList result = (NodeList)xPathExpression.evaluate(doc, XPathConstants.NODESET);
                 
                 Class<T> classname = (Class<T>) Class.forName("webclient." + this.getItemType());
+
                 for(int i = 0; i < result.getLength(); i++)
                 {
                     T item = Item.createFromXml(classname, this.toInnerXml(result.item(i)));

@@ -109,6 +109,11 @@ public class RightView extends WebComponentPanel implements ComponentListener
         
         public void updateView(MovieItem movie)
         {
+            if(movie == null)
+            {
+                movie = MovieItem.TestMovie();
+            }
+            
             if(movie != null)
             {
                 try {

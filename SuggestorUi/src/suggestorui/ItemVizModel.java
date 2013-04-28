@@ -5,6 +5,8 @@
 package suggestorui;
 
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import webclient.Item;
 import webclient.User;
 
@@ -16,10 +18,11 @@ import webclient.User;
 public class ItemVizModel<T extends Item> 
 {
     private ItemGraph<T> graph;
+    private Map<String, T> recommendations; 
         
     public ItemVizModel()
     {
-        Map<String, T> recommendations = User.getCurrent().getRecommendations();
+        recommendations = User.getCurrent().getRecommendations();
         graph = new ItemGraph<>(recommendations);
         this.initGraph();
     }
@@ -46,10 +49,18 @@ public class ItemVizModel<T extends Item>
     
     public void updateGraph(String attKey, Map<String, T> recommendations)
     {
-        graph.clear();
-        this.initGraph();
-        this.graph.setRecommendations(recommendations);
-        graph.buildFromItems(attKey);
+        this.recommendations = recommendations;
+        try {
+            graph.clear();
+            //System.gc();
+            //Thread.sleep(1000);
+            System.out.println("Graph Size: " + graph.getNodeCount() + " - " + graph.getEdgeCount());
+            this.initGraph();
+            this.graph.setRecommendations(recommendations);
+            graph.buildFromItems(attKey);
+        } catch (Exception ex) {
+            Logger.getLogger(ItemVizModel.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     public void selectItem(String itemId)
@@ -57,4 +68,8 @@ public class ItemVizModel<T extends Item>
         this.graph.setSelectedNode(itemId);
     }
     
+    public Map<String, T> getRecommendations()
+    {
+        return this.recommendations;
+    }
 }

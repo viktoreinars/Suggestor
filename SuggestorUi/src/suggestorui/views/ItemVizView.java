@@ -6,12 +6,19 @@ package suggestorui.views;
 
 import com.alee.extended.breadcrumb.WebBreadcrumb;
 import com.alee.extended.breadcrumb.WebBreadcrumbToggleButton;
+import com.alee.laf.button.WebButton;
 import com.alee.laf.label.WebLabel;
 import com.alee.laf.panel.WebPanel;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -23,6 +30,8 @@ import org.graphstream.ui.swingViewer.ViewerPipe;
 import suggestorui.Configuration;
 import suggestorui.ItemGraph;
 import suggestorui.ItemVizModel;
+import webclient.AttributeCollection;
+import webclient.Item;
 import webclient.MovieItem;
 import webclient.User;
 
@@ -41,6 +50,11 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private ViewerPipe pipe;
     private View graphView;
     private Date lastClickTime = new Date();
+    private int nRecommendations = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
+    private Viewer viewer;
+    private WebLabel info;
+    private Map<String, String> movieStack = new HashMap<>();
+    private WebButton clearBreadCrumbs;
     
     public ItemVizView(ItemVizModel model)
     {
@@ -67,37 +81,104 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         this.initGraphViz(middlePanel);
         
         breadcrumbs = new WebBreadcrumb ( true );
-        breadcrumbs.add(new WebBreadcrumbToggleButton("Overall 0"));
-        breadcrumbs.add(new WebBreadcrumbToggleButton("Overall 1"));
-        breadcrumbs.add(new WebBreadcrumbToggleButton("Overall 2"));
+        this.addBreadCrumb("Overall", "-1");
         middlePanel.add(breadcrumbs, BorderLayout.NORTH);
         
         WebPanel bottomPanel = new WebPanel();
         bottomPanel.setUndecorated(false);
-        WebLabel info = new WebLabel(String.format("<html><b>Total Recommended Movies: </b>%s &#08;          "
-                                                 + "<b>Top Similar Users: </b>%s &#08;</html> ", 
-                                                Configuration.getValue("nRecommendedItems"), Configuration.getValue("nFirstUsers")));
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
-        bottomPanel.add(Box.createHorizontalGlue());
-        bottomPanel.add(info);
+        info = new WebLabel(String.format("<html><b>Total Recommended Movies: </b>%d &#08;          "
+                                                 + "<b>Top Similar Users: </b>%s &#08;&#08;&#08;</html> ", 
+                                                this.nRecommendations, Configuration.getValue("nFirstUsers")));
+        
+        clearBreadCrumbs = new WebButton("Clear Bread Crumbs");
+        clearBreadCrumbs.setEnabled(false);
+        clearBreadCrumbs.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                Component[] crumbs = breadcrumbs.getComponents();
+                for(int i = 1; i < crumbs.length; i++)
+                {
+                    Component c = crumbs[i];
+                    breadcrumbs.remove(c);
+                }
+                ((WebBreadcrumbToggleButton)crumbs[0]).setSelected(true);
+                clearBreadCrumbs.setEnabled(false);
+                Map<String, MovieItem> recommendations = User.getCurrent().getRecommendations();
+                updateGraph(recommendations);
+            }
+        });
+        
+        bottomPanel.setLayout(new BorderLayout());
+        bottomPanel.add(info, BorderLayout.WEST);
+        bottomPanel.add(clearBreadCrumbs, BorderLayout.EAST);
         bottomPanel.setMargin(3);
         middlePanel.add(bottomPanel, BorderLayout.SOUTH);
         
         this.getContentPane().add(middlePanel, BorderLayout.CENTER);
     }
     
+    public void addBreadCrumb(String label, String movieId)
+    {
+        WebBreadcrumbToggleButton button = new WebBreadcrumbToggleButton(label);
+        movieStack.put(label, movieId);
+        breadcrumbs.add(button);
+        if(clearBreadCrumbs != null)
+        {
+            clearBreadCrumbs.setEnabled(breadcrumbs.getComponentCount() > 1);
+        }
+        button.setSelected(true);
+        for(Component c : breadcrumbs.getComponents())
+        {
+            if(c instanceof WebBreadcrumbToggleButton && !c.equals(button))
+            {
+                ((WebBreadcrumbToggleButton)c).setSelected(false);
+            }
+        }
+        button.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) 
+            {
+                for(Component c : breadcrumbs.getComponents())
+                {
+                    if(c instanceof WebBreadcrumbToggleButton && !c.equals(e.getSource()))
+                    {
+                        ((WebBreadcrumbToggleButton)c).setSelected(false);
+                    }
+                }
+                Map<String, MovieItem> recommendations;
+                if(e.getActionCommand().toLowerCase().equals("overall"))
+                {
+                    recommendations = User.getCurrent().getRecommendations();
+                }
+                else
+                {
+                    recommendations = User.getCurrent().getXRecommendations(movieStack.get(e.getActionCommand()));
+                }
+                updateGraph(recommendations);
+            }
+        });
+    }
+    
+    private void updateBottom()
+    {
+        info.setText(String.format("<html><b>Total Recommended Movies: </b>%d &#08;          "
+                                                 + "<b>Top Similar Users: </b>%s &#08;</html> ", 
+                                                this.nRecommendations, Configuration.getValue("nFirstUsers")));
+    }
+    
     private void initGraphViz(JPanel middlePanel)
     {
         this.model.updateGraph(Configuration.getValue("defaultAttributeKey"));
         ItemGraph graph = model.getGraph();
-        Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_SWING_THREAD);
         viewer.enableAutoLayout();
         viewer.enableXYZfeedback(true);
         viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.EXIT);
 
         pipe = viewer.newViewerPipe();
         pipe.addViewerListener(this);
-        pipe.addSink(graph);        
+        pipe.addSink(graph);
         
         graphView = viewer.addDefaultView(false);
         graphView.addComponentListener(this);
@@ -124,17 +205,30 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         this.model.selectItem(nodeId);
         MovieItem movie = (MovieItem) this.model.getGraph().getSelectedNode().getItem();
         this.rightView.getMovieView().updateView(movie);
+        movie.printGenres();
         
         Date currentClickTime = new Date();
         long interval = currentClickTime.getTime() - this.lastClickTime.getTime();
         //System.out.println("interval: " + interval);
-        if(interval <= 200)
+        if(interval <= 250)
         {
             System.out.println("Awesome!!! - Detected Double Click");
-            int nRecommendations = User.getCurrent().getXRecommendations(movie.getItemId()).size();
-            this.model.updateGraph(Configuration.getValue("defaultAttributeKey"));
+            Map<String, MovieItem> recommendations = User.getCurrent().getXRecommendations(movie.getItemId());
+            
+            
+            this.updateGraph(recommendations);
+            this.addBreadCrumb(movie.getTitle(), movie.getItemId());
         }
         this.lastClickTime = currentClickTime;
+    }
+    
+    private void updateGraph(Map<String, MovieItem> recommendations)
+    {
+        nRecommendations = recommendations.size();
+        viewer.disableAutoLayout();
+        this.model.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
+        viewer.enableAutoLayout();
+        this.updateBottom();
     }
 
     @Override

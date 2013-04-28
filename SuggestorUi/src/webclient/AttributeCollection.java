@@ -18,7 +18,6 @@ import java.util.Map;
 public class AttributeCollection
 {
     private static Map<String, Map<String, Map<String, Item>>> collection = new HashMap<>();
-    private static List<String> attKeys = new ArrayList<>();
     
     public static <T extends Item> void add(String attrKey, String attrValue, T item)
     {
@@ -46,13 +45,11 @@ public class AttributeCollection
     
     public static List<String> getAttributeKeys()
     {
-        if(attKeys.isEmpty())
+        List<String> attKeys = new ArrayList<>();
+        for(String key : collection.keySet())
         {
-            for(String key : collection.keySet())
-            {
-                attKeys.add(key);
-            }
-        }
+            attKeys.add(key);
+        }       
         return attKeys;
     }
     
@@ -66,6 +63,7 @@ public class AttributeCollection
         return attValues;
     }
     
+    
     public static int size()
     {
         return collection.size();
@@ -78,6 +76,14 @@ public class AttributeCollection
     
     public static void clear()
     {
+//        for(String attKey : AttributeCollection.getAttributeKeys())
+//        {
+//            for(String attValue : AttributeCollection.getAttributeValues(attKey))
+//            {
+//                collection.get(attKey).get(attValue).clear();
+//            }
+//            collection.get(attKey).clear();
+//        }
         collection.clear();
     }
     
@@ -93,4 +99,5 @@ public class AttributeCollection
            System.out.println();
         }
     }
+
 }

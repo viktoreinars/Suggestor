@@ -120,4 +120,16 @@ public class MovieItem extends Item implements Displayable, Styleable
         }
         return true;
     }
+    
+    public void printGenres()
+    {
+        for(MovieAttribute attribute : attributes)
+        {
+            if(attribute.getKey().toLowerCase().equals("genre"))
+            {
+                System.out.print(attribute.getValue() + " ");
+            }
+        }
+        System.out.println();
+    }
 }
