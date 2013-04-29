@@ -28,7 +28,7 @@ namespace MovieSuggestor
             if (singleton == null)
             {
                 singleton = new MovieSuggestor();
-                //singleton.Initialize();
+                singleton.Initialize();
             }
             return singleton;
         }
