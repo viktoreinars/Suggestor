@@ -16,6 +16,7 @@ public class ItemAttributeEvent extends EventObject
     private String attKey;
     private String attValue;
     private boolean rebuildRequired = false;
+    private int count = 0;
     
     public ItemAttributeEvent(String attKey, String attValue)
     {
@@ -64,6 +65,20 @@ public class ItemAttributeEvent extends EventObject
      */
     public void setRebuildRequired(boolean rebuildRequired) {
         this.rebuildRequired = rebuildRequired;
+    }
+
+    /**
+     * @return the count
+     */
+    public int getCount() {
+        return count;
+    }
+
+    /**
+     * @param count the count to set
+     */
+    public void setCount(int count) {
+        this.count = count;
     }
     
     

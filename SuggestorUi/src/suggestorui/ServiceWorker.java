@@ -4,12 +4,17 @@
  */
 package suggestorui;
 
+import com.alee.extended.window.WebProgressDialog;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
 import javax.swing.SwingWorker;
+import suggestorui.views.ItemVizView;
 import webclient.messaging.ServiceEvent;
 import webclient.messaging.ServiceEventListener;
+import webclient.messaging.SuggestorClient;
 import webclient.messaging.SuggestorClient.SuggestorResponse;
+import webclient.messaging.SuggestorMessage;
 
 /**
  *
@@ -20,6 +25,9 @@ public class ServiceWorker extends SwingWorker<SuggestorResponse, SuggestorRespo
 {
     private static ServiceWorker instance = null;
     private List<ServiceEventListener> listeners = new ArrayList<>();
+    private WebProgressDialog asyncProgress;
+    private SuggestorMessage message;
+    
     
     private ServiceWorker()
     {
@@ -34,12 +42,29 @@ public class ServiceWorker extends SwingWorker<SuggestorResponse, SuggestorRespo
         }
         return instance;
     }
+    
+    
 
-    
-    
-    public void work()
+    public void createNewAsyncProgress(ItemVizView view)
     {
+        asyncProgress = new WebProgressDialog(view, "Fetching Movies");
+        asyncProgress.setText("Please wait...");
     }
+    
+    @Override
+    public void done()
+    {
+        asyncProgress.setVisible(false);
+    }
+
+    @Override
+    public SuggestorResponse doInBackground() 
+    {
+        asyncProgress.setVisible(true);
+        asyncProgress.setModal(true);
+        return SuggestorClient.getCurent().sendMessage(message);
+    }
+    
     
     public void addServiceEventListener(ServiceEventListener listener)
     {
@@ -67,11 +92,20 @@ public class ServiceWorker extends SwingWorker<SuggestorResponse, SuggestorRespo
         }
     }
 
-
-    @Override
-    protected SuggestorResponse doInBackground() throws Exception 
-    {
-        return (SuggestorResponse) new Object();
+    /**
+     * @return the message
+     */
+    public SuggestorMessage getMessage() {
+        return message;
     }
+
+    /**
+     * @param message the message to set
+     */
+    public void setMessage(SuggestorMessage message) {
+        this.message = message;
+    }
+
+
     
 }

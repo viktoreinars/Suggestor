@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import org.graphstream.ui.layout.springbox.implementations.LinLog;
+import org.graphstream.ui.layout.springbox.implementations.SpringBox;
 import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
@@ -29,7 +31,6 @@ import suggestorui.Highlightable;
 import suggestorui.ItemGraph;
 import suggestorui.ItemVizModel;
 import webclient.AttributeCollection;
-import webclient.Item;
 import webclient.MovieItem;
 import webclient.User;
 
@@ -244,6 +245,7 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         viewer.disableAutoLayout();
         this.model.updateGraph(attKey, recommendations);
         viewer.enableAutoLayout();
+        this.nHighlighted = 0;
         this.updateBottom();
     }
 
@@ -293,6 +295,8 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
             this.updateGraph(attKey, AttributeCollection.getItems(attKey));
             this.model.getGraph().highlight(attKey, attValue, Highlightable.ORANGE_HIGHLIGHT);
         }
+        this.nHighlighted = event.getCount();
+        this.updateBottom();
     }
 
     @Override
@@ -303,8 +307,6 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     @Override
     public void onSelectedAttributeKey(ItemAttributeEvent event) 
     {
-        String attKey = event.getAttKey();
-        this.updateGraph(attKey, AttributeCollection.getItems(attKey));
     }
 
 }

@@ -129,20 +129,14 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
     
     public void highlight(String attKey, String attValue, String highlightClass)
     {
-        List<ItemEdge> edges = this.findEdges(attKey, attValue);
-        if(edges.isEmpty())
+        for(ItemNode node : this.findNodes(attKey, attValue))
         {
-            for(ItemNode node : this.findNodes(attKey, attValue))
-            {
-                ((Highlightable)node).highlight(highlightClass);
-            }
+            node.highlight(highlightClass);
         }
-        else
+        
+        for(ItemEdge edge : this.findEdges(attKey, attValue))
         {
-            for(Highlightable edge : edges)
-            {
-                edge.highlight(highlightClass);
-            }
+           edge.highlight(highlightClass);
         }
     }
     
@@ -199,13 +193,6 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
         return edges;
     }
     
-    public void highlight(ItemGraph<T> subGraph, String highlightClass)
-    {
-        for(ItemEdge<T> edge : subGraph.getEachEdgeItem())
-        {
-            ((Highlightable)this.getEdgeItem(edge)).highlight(highlightClass);
-        }
-    }
     
     public void restore(ItemGraph<T> subGraph)
     {
@@ -294,10 +281,12 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
     {
         if(this.selectedNode != null)
         {
-            ((Highlightable)this.selectedNode).restore();
+            //((Highlightable)this.selectedNode).restore();
+            this.selectedNode.unselect();
         }
         this.selectedNode = (ItemNode<T>)this.getNode(id);
-        ((Highlightable)this.selectedNode).highlight(Highlightable.NODE_SELECTED_HIGHLIGHT);
+        //((Highlightable)this.selectedNode).highlight(Highlightable.NODE_SELECTED_HIGHLIGHT);
+        this.selectedNode.select();
     }
 
     private void clearItems() 

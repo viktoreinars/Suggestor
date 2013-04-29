@@ -75,6 +75,41 @@ public class User extends Item implements Displayable
     }
     
     
+    public <T extends Item> Map<String, T> getAsyncRecommendations()
+    {
+        AttributeCollection.clear();
+        Highlightable.previousClass.clear();
+        //if(recommendations == null)
+        {
+            System.out.println("Getting the Recommendations...");
+            int k = Integer.parseInt(Configuration.getValue("nRecommendedItems"));
+            int nFirstUsers = Integer.parseInt(Configuration.getValue("nFirstUsers"));
+            GetMovieRecommendationsMessage message = new GetMovieRecommendationsMessage(nFirstUsers, k);
+            
+            ServiceEvent preEvent = new ServiceEvent(message, null);
+            ServiceWorker.getInstance().fireOnPreCommunicationEvents(preEvent);
+            
+            SuggestorItemListResponse<T> response = (SuggestorItemListResponse<T>) SuggestorClient.getCurent().sendMessage(message);
+            
+            ServiceEvent postEvent = new ServiceEvent(message, response);
+            ServiceWorker.getInstance().fireOnPostCommunicationEvents(postEvent);
+            
+            if(response.hasError())
+            {
+                System.out.println(response.getErrorMessage());
+                //return new HashMap<>();
+                recommendations = new HashMap<>();
+            }
+            else
+            {
+                Map<String, T> items = response.getItems();
+                System.out.println(String.format("Fetched %d items...", items.size()));
+                recommendations = items;
+            }
+        }
+        return (Map<String, T>)recommendations;
+    }
+    
     //to avoid hitting the webservice several times, I will lazyload
     public <T extends Item> Map<String, T> getRecommendations()
     {

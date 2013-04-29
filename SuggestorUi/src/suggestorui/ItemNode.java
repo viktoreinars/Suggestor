@@ -15,6 +15,8 @@ import webclient.Item;
 public class ItemNode<T extends Item> extends SingleNode implements Highlightable
 {
     private T item;
+    private boolean selected = false;
+    private boolean highlighted = false;
     
     public ItemNode(ItemGraph<T> graph, T item)
     {
@@ -40,8 +42,7 @@ public class ItemNode<T extends Item> extends SingleNode implements Highlightabl
     @Override
     public void highlight(String highlightClass) 
     {
-        String currentClass = this.getAttribute("ui.class") == null ? "" : this.getAttribute("ui.class").toString();
-        Highlightable.previousClass.put(this.getId(), currentClass);
+        this.highlighted = true;
         this.addAttribute("ui.class", highlightClass);
     }
 
@@ -49,9 +50,57 @@ public class ItemNode<T extends Item> extends SingleNode implements Highlightabl
     public void restore() 
     {
         this.removeAttribute("ui.class");
-        String prevClass = Highlightable.previousClass.get(this.getId());
-        prevClass = "".equals(prevClass) ? Configuration.getValue("nodeBaseClass") : prevClass;
-        this.setAttribute("ui.class", prevClass);
+        this.addAttribute("ui.class", Configuration.getValue("nodeBaseClass"));
+        
         this.updateStyle();
+        this.highlighted = false;
+    }
+    
+    public void select()
+    {
+        this.selected = true;
+        this.addAttribute("ui.class", Highlightable.NODE_SELECTED_HIGHLIGHT);
+    }
+    
+    public void unselect()
+    {
+        this.selected = false;
+        if(highlighted) 
+        {
+            this.addAttribute("ui.class", Highlightable.ORANGE_HIGHLIGHT);
+        }
+        else
+        {
+            this.addAttribute("ui.class", Configuration.getValue("nodeBaseClass"));
+        }
+    }
+    
+
+    /**
+     * @return the selected
+     */
+    public boolean isSelected() {
+        return selected;
+    }
+
+    /**
+     * @param selected the selected to set
+     */
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    /**
+     * @return the highlighted
+     */
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    /**
+     * @param highlighted the highlighted to set
+     */
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
     }
 }

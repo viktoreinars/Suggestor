@@ -169,6 +169,7 @@ public class LeftView extends WebComponentPanel implements ComponentListener
                         totalcount++;
                         String valueLabel = String.format("%s (%d)", attValue, count);
                         WebAttributePanel panel = new WebAttributePanel(attKey, attValue);
+                        panel.setCount(count);
                         panel.setDrawTop(true);
                         panel.setDrawBottom(true);
                         panel.add(new WebLabel(valueLabel));
@@ -276,9 +277,14 @@ public class LeftView extends WebComponentPanel implements ComponentListener
                 WebAttributePanel panel = (WebAttributePanel)e.getSource();
                 panel.setBackground(new Color(153,153, 153));                
                 ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), panel.getAttValue());
+                event.setCount(panel.getCount());
                 if(selected != null)
                 {
                     event.setRebuildRequired(!selected.getAttKey().equals(panel.getAttKey()));
+                }
+                else
+                {
+                    event.setRebuildRequired(true);
                 }
                 this.fireOnSelectedItemAttributeEvents(event);
                 this.selected = panel;
@@ -288,18 +294,18 @@ public class LeftView extends WebComponentPanel implements ComponentListener
         @Override
         public void mousePressed(MouseEvent e) 
         {
-            if(e.getSource() instanceof WebAccordion)
-            {
-                WebAccordion accordion = (WebAccordion)e.getSource();
-                if(this.selectedIndex != accordion.getFirstSelectedIndex())
-                {
-                    this.selectedIndex = accordion.getFirstSelectedIndex();
-                    WebAttributePanel panel = (WebAttributePanel)accordion.getContentAt(selectedIndex);
-                    
-                    ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), "");
-                    this.fireOnUnselectedAttributeKeyEvents(event);
-                }
-            }
+//            if(e.getSource() instanceof WebAccordion)
+//            {
+//                WebAccordion accordion = (WebAccordion)e.getSource();
+//                if(this.selectedIndex != accordion.getFirstSelectedIndex())
+//                {
+//                    this.selectedIndex = accordion.getFirstSelectedIndex();
+//                    WebAttributePanel panel = (WebAttributePanel)accordion.getContentAt(selectedIndex);
+//                    
+//                    ItemAttributeEvent event = new ItemAttributeEvent(panel.getAttKey(), "");
+//                    this.fireOnUnselectedAttributeKeyEvents(event);
+//                }
+//            }
         }
 
         @Override
@@ -366,6 +372,7 @@ public class LeftView extends WebComponentPanel implements ComponentListener
         {
             private String attKey;
             private String attValue;
+            private int count = 0;
             
             public WebAttributePanel(String attKey, String attValue, int margin)
             {
@@ -390,6 +397,20 @@ public class LeftView extends WebComponentPanel implements ComponentListener
              */
             public String getAttValue() {
                 return attValue;
+            }
+
+            /**
+             * @return the count
+             */
+            public int getCount() {
+                return count;
+            }
+
+            /**
+             * @param count the count to set
+             */
+            public void setCount(int count) {
+                this.count = count;
             }
         }
     }
