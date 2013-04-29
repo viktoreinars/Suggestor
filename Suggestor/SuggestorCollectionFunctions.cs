@@ -18,7 +18,7 @@ namespace Suggestor
             {
                 termProductSum += collection.CollectionLines[lineNo].Weight * otherCollection.CollectionLines[lineNo].Weight;
             }
-            double vectorNormalizingMultiplication = (GetSize(collection) * GetLimitedSize(otherCollection, mutualAttributes));
+            double vectorNormalizingMultiplication = (GetSize(collection) * GetSize(otherCollection));
             if (vectorNormalizingMultiplication == 0)
                 return 0;
             cosScore = termProductSum / vectorNormalizingMultiplication;
@@ -37,7 +37,7 @@ namespace Suggestor
             {
                 termProductSum += user.CollectionLines[lineId].Weight * otherUser.CollectionLines[lineId].Weight;
             }
-            double vectorNormalizingMultiplication = (GetSize(user) * GetLimitedSize(otherUser, mutualLines));
+            double vectorNormalizingMultiplication = (GetSize(user) * GetSize(otherUser));
             if (vectorNormalizingMultiplication == 0)
                 return 0;
             cosScore = termProductSum / vectorNormalizingMultiplication;
@@ -52,6 +52,7 @@ namespace Suggestor
             }
         }
 
+        /*
         public static double GetLimitedSize(SuggestorCollection collection, Dictionary<string, SuggestorCollectionLine> mutualCollectionLines)
         {
             double squaredSum = 0;
@@ -61,7 +62,8 @@ namespace Suggestor
             }
             return Math.Sqrt(squaredSum);
         }
-
+         */
+        /*
         public static double GetLimitedSize(SuggestorUser user, Dictionary<string, SuggestorCollectionLine> mutualCollectionLines)
         {
             double squaredSum = 0;
@@ -71,6 +73,7 @@ namespace Suggestor
             }
             return Math.Sqrt(squaredSum);
         }
+        */
 
         public static double GetSize(SuggestorCollection collection)
         {
