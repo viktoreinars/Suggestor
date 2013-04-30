@@ -12,8 +12,11 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.NodeFactory;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.stream.ElementSink;
+import org.graphstream.ui.swingViewer.Viewer;
 import suggestorui.views.ItemAttributeEvent;
 import suggestorui.views.ItemAttributeEventListener;
+import suggestorui.views.ItemVizView;
 import webclient.AttributeCollection;
 import webclient.Item;
 
@@ -22,15 +25,27 @@ import webclient.Item;
  * @author Gabriel Dzodom
  * @ CSDL
  */
-public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttributeEventListener
+public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttributeEventListener, ElementSink
 {
     
     private ItemNode<T> selectedNode;
+    private Map<String, T> currentRecommendations;
+    private String currentAttKey;
+    private String currentAttValue;
+    private Viewer viewer;
     
     public ItemGraph(final Map<String, T> recommendations)
     {
         super("Suggestor - Recommendations");
-        this.setRecommendations(recommendations);
+        this.currentRecommendations = recommendations;
+        this.currentAttKey = Configuration.getValue("defaultAttributeKey");
+    }  
+    
+    public void SetView(Viewer view)
+    {
+        this.viewer = view;
+        initGraph();
+        displayCurrentGraph();
     }
     
     public final void setRecommendations(final Map<String, T> recommendations)
@@ -67,44 +82,10 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
         }
         //for(String attKey : AttributeCollection.getAttributeKeys())
         {
-            System.out.print(attKey + " ---> ");
+            //System.out.print(attKey + " ---> ");
             for(String attValue : AttributeCollection.getAttributeValues(attKey))
             {
-                System.out.println(attValue + " ");
-                Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
-                if(items.length == 1)
-                {
-                    this.addNodeItem((T)items[0]);
-                    //break;
-                }
-                else
-                {
-                    for(int i = 0; i < items.length - 1; i++)
-                    {
-                        T source = (T)items[i];
-                        T target = (T)items[i + 1];
-                        System.out.println(this.addEdge(source, target).toString());
-                    }
-                }
-            }
-            System.out.println();
-        }
-        this.updateNodeStyles();
-        return true;
-    }
-    
-    public boolean buildFromItems()
-    {
-        if(AttributeCollection.isEmpty())
-        {
-            return false;
-        }
-        for(String attKey : AttributeCollection.getAttributeKeys())
-        {
-            System.out.print(attKey + " ---> ");
-            for(String attValue : AttributeCollection.getAttributeValues(attKey))
-            {
-                System.out.print(attValue + " ");
+                //System.out.println(attValue + " ");
                 Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
                 if(items.length == 1)
                 {
@@ -121,7 +102,41 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
                     }
                 }
             }
-            System.out.println();
+            //System.out.println();
+        }
+        this.updateNodeStyles();
+        return true;
+    }
+    
+    public boolean buildFromItems()
+    {
+        if(AttributeCollection.isEmpty())
+        {
+            return false;
+        }
+        for(String attKey : AttributeCollection.getAttributeKeys())
+        {
+            //System.out.print(attKey + " ---> ");
+            for(String attValue : AttributeCollection.getAttributeValues(attKey))
+            {
+                //System.out.print(attValue + " ");
+                Item[] items = AttributeCollection.getCluster(attKey, attValue).values().toArray(new Item[0]);
+                if(items.length == 1)
+                {
+                    this.addNodeItem((T)items[0]);
+                    //break;
+                }
+                else
+                {
+                    for(int i = 0; i < items.length - 1; i++)
+                    {
+                        T source = (T)items[i];
+                        T target = (T)items[i + 1];
+                        this.addEdge(source, target);
+                    }
+                }
+            }
+            //System.out.println();
         }
         this.updateNodeStyles();
         return true;
@@ -289,18 +304,7 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
         this.selectedNode.select();
     }
 
-    private void clearItems() 
-    {
-        for(ItemNode<T> node : this.getEachNodeItem())
-        {
-            this.removeNode(node.getId());
-        }
-//        for(ItemEdge<T> edge : this.getEachEdgeItem())
-//        {
-//            this.removeEdge(edge);
-//        }
-    }
-
+    
     @Override
     public void onSelectedItemAttribute(ItemAttributeEvent event) 
     {
@@ -316,6 +320,60 @@ public class ItemGraph<T extends Item> extends SingleGraph implements ItemAttrib
     @Override
     public void onSelectedAttributeKey(ItemAttributeEvent event) 
     {
+    }
+    
+    @Override
+    public void graphCleared(String sourceId, long timeId)
+    { 
+        initGraph();
+        displayCurrentGraph();                  
+    }
+    
+    public void initGraph()
+    {
+        String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));
+        addAttribute("ui.stylesheet", graphInitStyle);
+        addAttribute("ui.antialias");
+        addAttribute("ui.quality");
+        setAutoCreate(true);
+        setStrict(false);  
+    }
+    
+    public void displayCurrentGraph()
+    {
+        setRecommendations(this.currentRecommendations);
+        buildFromItems(this.currentAttKey);
+        if (currentAttValue != null)
+        {
+            highlight(currentAttKey, currentAttValue, Highlightable.ORANGE_HIGHLIGHT);
+        }
+        viewer.enableAutoLayout();
+    }
+    
+    public void updateGraph(Map<String, T> recommendations, String attKey)
+    {
+        viewer.disableAutoLayout();
+        
+        // Unhighlight stuff
+        //unhighlight(currentAttKey, currentAttValue);
+        
+        this.currentRecommendations = recommendations;
+        this.currentAttKey = attKey;
+        this.currentAttValue = null;
+        clear();
+    }
+    
+    public void updateGraph(Map<String, T> recommendations, String attKey, String attValue)
+    {
+        viewer.disableAutoLayout();
+        
+        // Unhighlight stuff
+        //unhighlight(currentAttKey, currentAttValue);
+        
+        this.currentRecommendations = recommendations;
+        this.currentAttKey = attKey;
+        this.currentAttValue = attValue;
+        clear();
     }
 
 }

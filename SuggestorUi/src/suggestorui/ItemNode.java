@@ -20,7 +20,7 @@ public class ItemNode<T extends Item> extends SingleNode implements Highlightabl
     
     public ItemNode(ItemGraph<T> graph, T item)
     {
-        super(graph, item.getItemId());
+        super(graph, item.getItemId());        
         this.item = item;
     }
 

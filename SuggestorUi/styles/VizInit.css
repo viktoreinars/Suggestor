@@ -14,7 +14,7 @@ edge { visibility-mode: hidden; }
 node
 {
     fill-mode: image-scaled-ratio-max;
-    size: 60px;
+    size: 90px;
     stroke-mode: plain;
     stroke-color: grey;
 }

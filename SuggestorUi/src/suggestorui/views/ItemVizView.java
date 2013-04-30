@@ -20,8 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import org.graphstream.ui.layout.springbox.implementations.LinLog;
-import org.graphstream.ui.layout.springbox.implementations.SpringBox;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
+import org.graphstream.ui.graphicGraph.GraphicElementChangeListener;
 import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.graphstream.ui.swingViewer.ViewerListener;
@@ -31,6 +32,7 @@ import suggestorui.Highlightable;
 import suggestorui.ItemGraph;
 import suggestorui.ItemVizModel;
 import webclient.AttributeCollection;
+import webclient.Item;
 import webclient.MovieItem;
 import webclient.User;
 
@@ -56,37 +58,59 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     private WebButton clearBreadCrumbs;
     private LeftView leftView;
     private int nHighlighted = 0;
+    JProgressBar progressBar;
+    JPanel middlePanel;
     
-    public ItemVizView(ItemVizModel model)
+    public ItemVizView()
     {
         super(Configuration.getValue("application.title"));
-        this.model = model;
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        initUi();
     }
-
-    private void initUi() 
+    
+    public void initializeModel()
+    {
+        Map<String, MovieItem> initialRecommendations = GetRecommendedMovies();
+        ItemVizModel newModel = new ItemVizModel(initialRecommendations);
+        this.model = newModel;
+        //updateGraph(initialRecommendations);
+    }
+    
+    public void initUi() 
     {
         this.rightView = new RightView();
         this.leftView = new LeftView();
         this.leftView.addItemAttributeEventListener(model.getGraph());
         this.leftView.addItemAttributeEventListener(this);
-        
+                
         this.getContentPane().setLayout(new BorderLayout());
-        this.initMiddleView();
+        
+        JProgressBar newProgressBar = new JProgressBar();
+        progressBar = newProgressBar;
+        progressBar.setIndeterminate(true);
+        int centerX = (this.getWidth() / 2) - (progressBar.getWidth() / 2);
+        int centerY = (this.getHeight() / 2) - (progressBar.getHeight()/ 2);
+        progressBar.setBounds(centerX, centerY, 200, 100);
+        this.add(progressBar);
+        
+        progressBar.setVisible(false);
+        
+        this.initMiddleView();                        
+        
         this.getContentPane().add(leftView, BorderLayout.WEST);
         this.getContentPane().add(rightView, BorderLayout.EAST);
+        
+        //this.setLocationRelativeTo(null);
     }
     
     private void initMiddleView()
     {
-        JPanel middlePanel = new JPanel();
-        middlePanel.setLayout(new BorderLayout());
+        middlePanel = new JPanel();
+        middlePanel.setLayout(new BorderLayout());                
         
         this.initGraphViz(middlePanel);
         
         breadcrumbs = new WebBreadcrumb ( true );
-        this.addBreadCrumb("Overall", "-1");
+        this.addBreadCrumb("Initial Recommendations", "-1");
         middlePanel.add(breadcrumbs, BorderLayout.NORTH);
         
         WebPanel bottomPanel = new WebPanel();
@@ -109,8 +133,9 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
                 }
                 ((WebBreadcrumbToggleButton)crumbs[0]).setSelected(true);
                 clearBreadCrumbs.setEnabled(false);
-                Map<String, MovieItem> recommendations = User.getCurrent().getRecommendations();
+                Map<String, MovieItem> recommendations = GetRecommendedMovies();
                 updateGraph(recommendations);
+                
             }
         });
         
@@ -152,13 +177,13 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
                     }
                 }
                 Map<String, MovieItem> recommendations;
-                if(e.getActionCommand().toLowerCase().equals("overall"))
+                if(e.getActionCommand().toLowerCase().equals("initial recommendations"))
                 {
-                    recommendations = User.getCurrent().getRecommendations();
+                    recommendations = GetRecommendedMovies();
                 }
                 else
                 {
-                    recommendations = User.getCurrent().getXRecommendations(movieStack.get(e.getActionCommand()));
+                    recommendations = GetXRecommendedMovies(movieStack.get(e.getActionCommand()));
                 }
                 updateGraph(recommendations);
             }
@@ -174,29 +199,35 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     
     private void initGraphViz(JPanel middlePanel)
     {
-        this.model.updateGraph(Configuration.getValue("defaultAttributeKey"));
         ItemGraph graph = model.getGraph();
-        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_SWING_THREAD);
+        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);        
         viewer.enableAutoLayout();
         viewer.enableXYZfeedback(true);
         viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.EXIT);
+        this.model.SetView(viewer);
 
         pipe = viewer.newViewerPipe();
         pipe.addViewerListener(this);
         pipe.addSink(graph);
-        
+                
         graphView = viewer.addDefaultView(false);
         graphView.addComponentListener(this);
+        
         middlePanel.add(graphView, BorderLayout.CENTER);
     }
     
     public void startPumping()
     {
         while(loop) 
-        {
+        {            
             pipe.pump();
+            sleep(100);
         }        
     }
+    
+    protected static void sleep(long ms) {
+		try { Thread.sleep(ms); } catch(Exception e) {} 
+	}
 
     @Override
     public void viewClosed(String string) 
@@ -206,7 +237,8 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
 
     @Override
     public void buttonPushed(String nodeId) 
-    {
+    {                
+        System.out.println("buttonPushed");
         this.model.selectItem(nodeId);
         MovieItem movie = (MovieItem) this.model.getGraph().getSelectedNode().getItem();
         this.rightView.getMovieView().updateView(movie);
@@ -215,53 +247,64 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         Date currentClickTime = new Date();
         long interval = currentClickTime.getTime() - this.lastClickTime.getTime();
         //System.out.println("interval: " + interval);
-        if(interval <= 250)
+        if(interval <= 400)
         {
-            System.out.println("Awesome!!! - Detected Double Click");
+            //System.out.println("Awesome!!! - Detected Double Click");
             Map<String, MovieItem> recommendations;
             if(this.leftView.getSelectedAttributePane() == null || 
                this.leftView.getSelectedAttributePane().getAttKey() == null || this.leftView.getSelectedAttributePane().getAttKey().equals("") ||
                this.leftView.getSelectedAttributePane().getAttValue() == null || this.leftView.getSelectedAttributePane().getAttValue().equals(""))
             {
-                recommendations = User.getCurrent().getXRecommendations(movie.getItemId());
+                recommendations = GetXRecommendedMovies(movie.getItemId());                
                 this.updateGraph(recommendations);
             }
             else
             {
                 String attKey = this.leftView.getSelectedAttributePane().getAttKey();
                 String attValue = this.leftView.getSelectedAttributePane().getAttValue();
-                recommendations = User.getCurrent().getXRecommendations(movie.getItemId(), attKey, attValue);
-                this.updateGraph(attKey, recommendations);
-                System.out.println("Selected Key Pair: " + attKey + ", " + attValue);
+                recommendations = GetXRecommendedMovies(movie.getItemId(), attKey, attValue);
+                this.updateGraph(recommendations, attKey);
+                //System.out.println("Selected Key Pair: " + attKey + ", " + attValue);
             }
             this.addBreadCrumb(movie.getTitle(), movie.getItemId());
         }
         this.lastClickTime = currentClickTime;
-    }
-    
-    private void updateGraph(String attKey, Map<String, MovieItem> recommendations)
-    {
-        nRecommendations = recommendations.size();
-        viewer.disableAutoLayout();
-        this.model.updateGraph(attKey, recommendations);
-        viewer.enableAutoLayout();
-        this.nHighlighted = 0;
-        this.updateBottom();
-    }
+    }        
 
     private void updateGraph(Map<String, MovieItem> recommendations)
     {
-        this.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
-//        nRecommendations = recommendations.size();
-//        viewer.disableAutoLayout();
-//        this.model.updateGraph(Configuration.getValue("defaultAttributeKey"), recommendations);
-//        viewer.enableAutoLayout();
-//        this.updateBottom();
+        this.updateGraph(recommendations, Configuration.getValue("defaultAttributeKey"));
+    }
+    
+    private void updateGraph(Map<String, MovieItem> recommendations, String attKey)
+    {
+        this.model.updateGraph(recommendations, attKey);
+        updateUiInfo(recommendations.size(), 0);
+    }
+    
+    private void updateGraph(Map<String, MovieItem> recommendations, String attKey, String attValue)
+    {
+        this.model.updateGraph(recommendations, attKey, attValue);
+        this.updateUiInfo(recommendations.size(), 0);
+    }
+    
+    private void updateUiInfo(int nRecommendations, int nHighlighted)
+    {
+        this.nRecommendations = nRecommendations;
+        this.nHighlighted = nHighlighted;
+        this.updateBottom();
+    }
+    
+    private void updateHighlightNumber(int nHighlighted)
+    {
+        this.nHighlighted = nHighlighted;
+        this.updateBottom();
     }
 
     @Override
     public void buttonReleased(String nodeId) 
     {
+        
     }
 
     @Override
@@ -292,11 +335,9 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
         {
             String attKey = event.getAttKey();
             String attValue = event.getAttValue();
-            this.updateGraph(attKey, AttributeCollection.getItems(attKey));
-            this.model.getGraph().highlight(attKey, attValue, Highlightable.ORANGE_HIGHLIGHT);
+            this.updateGraph(AttributeCollection.getItems(attKey), attKey, attValue);
         }
-        this.nHighlighted = event.getCount();
-        this.updateBottom();
+        this.updateHighlightNumber(event.getCount());
     }
 
     @Override
@@ -309,4 +350,60 @@ public class ItemVizView extends JFrame implements ViewerListener, ComponentList
     {
     }
 
+    public Map<String, MovieItem> GetRecommendedMovies()
+    {   
+        //Map<String, MovieItem> recommendations;        
+        showProgressBar();
+        Map<String, MovieItem> recommendations = User.getCurrent().getRecommendations();
+        hideProgressBar();
+
+
+        return recommendations;
+    }
+    
+    public Map<String, MovieItem> GetXRecommendedMovies(String movieId)
+    {
+        showProgressBar();
+        Map<String, MovieItem> recommendations =  User.getCurrent().getXRecommendations(movieId);
+        hideProgressBar();
+        return recommendations;
+    }
+    
+    public Map<String, MovieItem> GetXRecommendedMovies(String movieId, String attKey, String attValue)
+    {
+        showProgressBar();
+        Map<String, MovieItem> recommendations =  User.getCurrent().getXRecommendations(movieId, attKey, attValue);
+        hideProgressBar();
+        return recommendations;
+    }
+    
+    private void showProgressBar()
+    {
+        
+        SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    int centerX = (getWidth() / 2) - (progressBar.getWidth() / 2);
+                    int centerY = (getHeight() / 2) - (progressBar.getHeight()/ 2);
+                    progressBar.setBounds(centerX, centerY, 200, 100);
+                    progressBar.setVisible(true);    
+                    setEnabled(false);
+                    System.out.println("ProgressBar hidden");
+                }
+            });
+    }
+    
+    private void hideProgressBar()
+    {
+        SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    progressBar.setVisible(false);
+                    setEnabled(true);
+                    System.out.println("ProgressBar visible");
+                }
+            });
+    }
 }

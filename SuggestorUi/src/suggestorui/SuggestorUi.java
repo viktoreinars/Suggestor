@@ -5,18 +5,24 @@
 package suggestorui;
 
 import com.alee.laf.WebLookAndFeel;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.graphstream.ui.swingViewer.ViewerListener;
 import suggestorui.views.ItemVizView;
+import webclient.Item;
 import webclient.MovieItem;
+import webclient.User;
 
 /**
  *
  * @author Gabriel Dzodom
  * @ CSDL
  */
-public class SuggestorUi implements ViewerListener
+public class SuggestorUi// implements ViewerListener
 {
     /**
      * @param args the command line arguments
@@ -43,55 +49,42 @@ public class SuggestorUi implements ViewerListener
     public static void main(String[] args) 
     {
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
-        try
-        {
+        
+        SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    new SuggestorUi().createAndShowGUI();
+                }
+            });
+    }
+    
+    protected void createAndShowGUI()
+    {
+        try {
             UIManager.setLookAndFeel(WebLookAndFeel.class.getCanonicalName());
-            WebLookAndFeel.initializeManagers();
-            SuggestorUi suggestorUi = new SuggestorUi();
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e)
-        {
-            System.out.println(e.getMessage());
+            WebLookAndFeel.initializeManagers();                        
+            ItemVizView view = new ItemVizView();
+            view.initializeModel();
+            view.initUi();
+            view.pack();
+            view.setVisible(true);            
+            startPumping(view);
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(SuggestorUi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public SuggestorUi()
-    {
-        ItemVizModel model = new ItemVizModel();
-        ItemVizView view = new ItemVizView(model);
-        view.pack();
-        view.setVisible(true);
-        view.startPumping();
-    }
-
-    @Override
-    public void viewClosed(String string) 
-    {
-        loop = false;
-    }
-
-    @Override
-    public void buttonPushed(String nodeId) 
-    {
-        String attkey = "Gender";
-        String attvalue = gender[aIter];
-        String color = colors[cIter];
-        if(highlighted)
+    protected void startPumping(final ItemVizView view)
+    {        
+        Thread queryThread = new Thread() 
         {
-            graph.restore(attkey, attvalue);
-        }
-        else
-        {
-            graph.highlight(attkey, attvalue, color);
-        }
-        //highlighted = !highlighted;
-        aIter = aIter >= gender.length - 1 ? 0 : aIter + 1;
-        cIter = cIter >= colors.length - 1 ? 0 : cIter + 1;
-        System.out.println(attvalue);
-    }
-
-    @Override
-    public void buttonReleased(String string) 
-    {
+            public void run() 
+            {
+              view.startPumping();
+            }
+        };
+        queryThread.start();
+        
     }
 }

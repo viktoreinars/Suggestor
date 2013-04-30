@@ -5,8 +5,7 @@
 package suggestorui;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.graphstream.ui.swingViewer.Viewer;
 import webclient.Item;
 import webclient.User;
 
@@ -18,23 +17,15 @@ import webclient.User;
 public class ItemVizModel<T extends Item>
 {
     private ItemGraph<T> graph;
-    private Map<String, T> recommendations; 
         
-    public ItemVizModel()
-    {
-        recommendations = User.getCurrent().getRecommendations();
-        graph = new ItemGraph<>(recommendations);
-        this.initGraph();
+    public ItemVizModel(Map<String, T> recommendations)
+    {                
+        graph = new ItemGraph<>(recommendations);                
     }
     
-    private void initGraph()
+    public void SetView(Viewer view)
     {
-        String graphInitStyle = String.format("url('%s')", Configuration.getValue("item.style"));
-        graph.addAttribute("ui.stylesheet", graphInitStyle);
-        graph.addAttribute("ui.antialias");
-        graph.addAttribute("ui.quality");
-        graph.setAutoCreate(true);
-        graph.setStrict(false);
+        this.graph.SetView(view);
     }
         
     public ItemGraph<T> getGraph()
@@ -42,40 +33,18 @@ public class ItemVizModel<T extends Item>
         return this.graph;
     }
     
-    public void updateGraph(String attKey)
+    public void updateGraph(Map<String, T> recommendations, String attKey, String attValue)
     {
-        this.updateGraph(attKey, false);
+        graph.updateGraph(recommendations, attKey, attValue);
     }
     
-    public void updateGraph(String attKey, boolean force)
+    public void updateGraph(Map<String, T> recommendations, String attKey)
     {
-        if(force)
-        {
-            graph.clear();
-            this.initGraph();
-            this.graph.setRecommendations(recommendations);
-        }
-        graph.buildFromItems(attKey);
-    }
-    
-    public void updateGraph(String attKey, Map<String, T> recommendations)
-    {
-        this.recommendations = recommendations;
-        try {
-            graph.clear();
-            //System.gc();
-            //Thread.sleep(1000);
-            this.initGraph();
-            this.graph.setRecommendations(recommendations);
-            graph.buildFromItems(attKey);
-        } catch (Exception ex) {
-            Logger.getLogger(ItemVizModel.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        graph.updateGraph(recommendations, attKey);
     }
     
     public void selectItem(String itemId)
-    {
+    {        
         this.graph.setSelectedNode(itemId);
     }
-    
 }
